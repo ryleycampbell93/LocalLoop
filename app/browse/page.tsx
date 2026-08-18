@@ -16,6 +16,7 @@ type Listing = {
   route?: string;
   from?: string;
   to?: string;
+  photos?: string[];
 };
 
 const demoOffers: Listing[] = [
@@ -275,6 +276,11 @@ export default function BrowsePage() {
             (offer.from && offer.to) || offer.route
           );
 
+          const heroPhoto =
+            Array.isArray(offer.photos) && offer.photos.length > 0
+              ? offer.photos[0]
+              : null;
+
           return (
             <article
               key={offer.id}
@@ -282,133 +288,148 @@ export default function BrowsePage() {
                 background: "#fff",
                 border: "1px solid #ded8cd",
                 borderRadius: 18,
-                padding: "1.2rem",
+                overflow: "hidden",
                 boxShadow:
                   "0 8px 24px rgba(36, 48, 40, 0.05)",
               }}
             >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  gap: "1rem",
-                  alignItems: "flex-start",
-                }}
-              >
-                <div>
-                  <p
-                    style={{
-                      color: "#315c44",
-                      fontWeight: 800,
-                      marginBottom: "0.25rem",
-                    }}
-                  >
-                    {offer.category}
-                  </p>
-
-                  <h2 style={{ margin: 0 }}>{offer.title}</h2>
-                </div>
-
-                <span
+              {heroPhoto && (
+                <img
+                  src={heroPhoto}
+                  alt={offer.title}
                   style={{
-                    background: "#eef4ef",
-                    color: "#315c44",
-                    borderRadius: 999,
-                    padding: "0.4rem 0.7rem",
-                    fontSize: "0.85rem",
-                    whiteSpace: "nowrap",
+                    display: "block",
+                    width: "100%",
+                    height: 220,
+                    objectFit: "cover",
                   }}
-                >
-                  {offer.distance} km
-                </span>
-              </div>
-
-              <p style={{ color: "#6b6f69" }}>
-                {offer.person} · {offer.town}
-              </p>
-
-              {hasRoute && (
-                <div
-                  style={{
-                    background: "#eef4ef",
-                    borderRadius: 14,
-                    padding: "0.9rem",
-                    marginBottom: "0.8rem",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: "0.8rem",
-                      fontWeight: 800,
-                      color: "#315c44",
-                      marginBottom: "0.3rem",
-                    }}
-                  >
-                    ROUTE
-                  </div>
-
-                  <strong>
-                    {offer.from && offer.to
-                      ? `${offer.from} → ${offer.to}`
-                      : offer.route}
-                  </strong>
-                </div>
+                />
               )}
 
-              <div
-                style={{
-                  background: "#f8f6f1",
-                  borderRadius: 14,
-                  padding: "1rem",
-                  marginBottom: "1rem",
-                }}
-              >
-                {offer.type === "need" ? (
-                  <>
-                    <p style={{ marginBottom: "0.7rem" }}>
-                      <strong>Needs:</strong>
-                      <br />
-                      {offer.wants}
+              <div style={{ padding: "1.2rem" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: "1rem",
+                    alignItems: "flex-start",
+                  }}
+                >
+                  <div>
+                    <p
+                      style={{
+                        color: "#315c44",
+                        fontWeight: 800,
+                        marginBottom: "0.25rem",
+                      }}
+                    >
+                      {offer.category}
                     </p>
 
-                    <p style={{ margin: 0 }}>
-                      <strong>Offers in exchange:</strong>
-                      <br />
-                      {offer.offers}
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <p style={{ marginBottom: "0.7rem" }}>
-                      <strong>Offers:</strong>
-                      <br />
-                      {offer.offers}
-                    </p>
+                    <h2 style={{ margin: 0 }}>{offer.title}</h2>
+                  </div>
 
-                    <p style={{ margin: 0 }}>
-                      <strong>Would like in exchange:</strong>
-                      <br />
-                      {offer.wants}
-                    </p>
-                  </>
+                  <span
+                    style={{
+                      background: "#eef4ef",
+                      color: "#315c44",
+                      borderRadius: 999,
+                      padding: "0.4rem 0.7rem",
+                      fontSize: "0.85rem",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {offer.distance} km
+                  </span>
+                </div>
+
+                <p style={{ color: "#6b6f69" }}>
+                  {offer.person} · {offer.town}
+                </p>
+
+                {hasRoute && (
+                  <div
+                    style={{
+                      background: "#eef4ef",
+                      borderRadius: 14,
+                      padding: "0.9rem",
+                      marginBottom: "0.8rem",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: "0.8rem",
+                        fontWeight: 800,
+                        color: "#315c44",
+                        marginBottom: "0.3rem",
+                      }}
+                    >
+                      ROUTE
+                    </div>
+
+                    <strong>
+                      {offer.from && offer.to
+                        ? `${offer.from} → ${offer.to}`
+                        : offer.route}
+                    </strong>
+                  </div>
                 )}
-              </div>
 
-              <Link
-                href={`/listing/${offer.id}`}
-                style={{
-                  display: "block",
-                  textAlign: "center",
-                  background: "#315c44",
-                  color: "#fff",
-                  padding: "0.9rem 1rem",
-                  borderRadius: 12,
-                  textDecoration: "none",
-                  fontWeight: 800,
-                }}
-              >
-                View listing
-              </Link>
+                <div
+                  style={{
+                    background: "#f8f6f1",
+                    borderRadius: 14,
+                    padding: "1rem",
+                    marginBottom: "1rem",
+                  }}
+                >
+                  {offer.type === "need" ? (
+                    <>
+                      <p style={{ marginBottom: "0.7rem" }}>
+                        <strong>Needs:</strong>
+                        <br />
+                        {offer.wants}
+                      </p>
+
+                      <p style={{ margin: 0 }}>
+                        <strong>Offers in exchange:</strong>
+                        <br />
+                        {offer.offers}
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p style={{ marginBottom: "0.7rem" }}>
+                        <strong>Offers:</strong>
+                        <br />
+                        {offer.offers}
+                      </p>
+
+                      <p style={{ margin: 0 }}>
+                        <strong>Would like in exchange:</strong>
+                        <br />
+                        {offer.wants}
+                      </p>
+                    </>
+                  )}
+                </div>
+
+                <Link
+                  href={`/listing/${offer.id}`}
+                  style={{
+                    display: "block",
+                    textAlign: "center",
+                    background: "#315c44",
+                    color: "#fff",
+                    padding: "0.9rem 1rem",
+                    borderRadius: 12,
+                    textDecoration: "none",
+                    fontWeight: 800,
+                  }}
+                >
+                  View listing
+                </Link>
+              </div>
             </article>
           );
         })}
