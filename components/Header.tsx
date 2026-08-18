@@ -4,7 +4,7 @@ export default function Header() {
   return (
     <header className="header">
       <div className="container nav">
-        <Link className="brand" href="/">Fair<span>Trade</span></Link>
+        <Link className="brand" href="/">Local<span>Loop</span></Link>
         <nav className="navlinks">
           <Link href="/">Browse</Link>
           <Link href="/messages">Messages</Link>
@@ -15,3 +15,4 @@ export default function Header() {
     </header>
   );
 }
+
