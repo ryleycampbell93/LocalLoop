@@ -3,7 +3,7 @@ import Link from "next/link";
 const listings = {
   "carpentry-cooma": {
     title: "Carpentry & small repairs",
-    person: "Ryley",
+    person: "Riley",
     town: "Cooma",
     category: "Trades",
     offers: "Shelves, doors, timber repairs and small carpentry jobs",
@@ -47,6 +47,7 @@ export default async function ListingPage({
         <div className="card">
           <h1>Listing not found</h1>
           <p>That listing may have been removed or completed.</p>
+
           <Link className="btn" href="/browse">
             Back to marketplace
           </Link>
@@ -115,14 +116,9 @@ export default async function ListingPage({
           {listing.description}
         </p>
 
-        <div
-          style={{
-            display: "grid",
-            gap: "0.8rem",
-          }}
-        >
+        <div style={{ display: "grid", gap: "0.8rem" }}>
           <Link
-            href={`/messages?listing=${id}`}
+            href={`/propose?listing=${id}`}
             style={{
               display: "block",
               textAlign: "center",
