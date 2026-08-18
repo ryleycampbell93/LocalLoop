@@ -25,8 +25,7 @@ const demoOffers: Listing[] = [
     category: "Pickups & Errands",
     offers:
       "Can collect a prepaid hardware order from Mitre 10 Pambula and bring it toward Cooma.",
-    wants:
-      "Firewood, a hand with fencing, or another useful local favour.",
+    wants: "Firewood, fresh produce, or another useful local favour.",
   },
   {
     id: "merimbula-pharmacy-pickup",
@@ -36,9 +35,8 @@ const demoOffers: Listing[] = [
     distance: 108,
     category: "Pickups & Errands",
     offers:
-      "Can collect eligible prepaid pharmacy items from Merimbula when already travelling inland.",
-    wants:
-      "Garden help, dog minding, or help moving a few items.",
+      "Can collect eligible prepaid pharmacy items when already travelling inland.",
+    wants: "Garden help, dog minding, or help moving a few items.",
   },
   {
     id: "click-and-collect-coast",
@@ -48,9 +46,8 @@ const demoOffers: Listing[] = [
     distance: 110,
     category: "Pickups & Errands",
     offers:
-      "Heading from the coast toward Cooma and can collect a prepaid Click & Collect order on the way.",
-    wants:
-      "Trailer use, mechanical help, or help splitting firewood.",
+      "Heading from the coast toward Cooma and can collect a prepaid Click & Collect order.",
+    wants: "Fresh eggs, mechanical help, trailer use, or another useful favour.",
   },
   {
     id: "firewood-cooma",
@@ -61,8 +58,7 @@ const demoOffers: Listing[] = [
     category: "Home & Garden",
     offers:
       "Can deliver a ute load of firewood around Cooma and nearby areas.",
-    wants:
-      "Small carpentry job, welding help, or mower servicing.",
+    wants: "Small carpentry work, welding help, or mower servicing.",
   },
   {
     id: "trailer-transport-jindabyne",
@@ -73,8 +69,7 @@ const demoOffers: Listing[] = [
     category: "Transport",
     offers:
       "Can help move a mower, furniture or other suitable items with a trailer.",
-    wants:
-      "Garden cleanup, painting help, or computer assistance.",
+    wants: "Garden cleanup, painting help, or computer assistance.",
   },
   {
     id: "fencing-bombala",
@@ -98,7 +93,7 @@ const demoOffers: Listing[] = [
     offers:
       "Can help with basic mower, small engine and mechanical jobs.",
     wants:
-      "Carpentry, transport help, or a useful local trade.",
+      "Carpentry, transport help, fresh produce, or another useful local trade.",
   },
 ];
 
@@ -129,7 +124,10 @@ export default function BrowsePage() {
   );
 
   const towns = useMemo(
-    () => ["All towns", ...Array.from(new Set(offers.map((offer) => offer.town)))],
+    () => [
+      "All towns",
+      ...Array.from(new Set(offers.map((offer) => offer.town))),
+    ],
     [offers]
   );
 
@@ -200,8 +198,8 @@ export default function BrowsePage() {
             maxWidth: 720,
           }}
         >
-          Find local people offering practical help, transport, skills and useful
-          trades around the region.
+          Find local people offering practical help, transport, skills and
+          useful trades around the region.
         </p>
 
         <input
@@ -344,36 +342,23 @@ export default function BrowsePage() {
               </p>
             </div>
 
-            {offer.id.startsWith("user-") ? (
-              <div
-                style={{
-                  background: "#eef4ef",
-                  color: "#315c44",
-                  padding: "0.8rem",
-                  borderRadius: 12,
-                  textAlign: "center",
-                  fontWeight: 800,
-                }}
-              >
-                Your new listing ✓
-              </div>
-            ) : (
-              <Link
-                href={`/listing/${offer.id}`}
-                style={{
-                  display: "block",
-                  textAlign: "center",
-                  background: "#315c44",
-                  color: "#fff",
-                  padding: "0.9rem 1rem",
-                  borderRadius: 12,
-                  textDecoration: "none",
-                  fontWeight: 800,
-                }}
-              >
-                View offer
-              </Link>
-            )}
+            <Link
+              href={`/listing/${offer.id}`}
+              style={{
+                display: "block",
+                textAlign: "center",
+                background: "#315c44",
+                color: "#fff",
+                padding: "0.9rem 1rem",
+                borderRadius: 12,
+                textDecoration: "none",
+                fontWeight: 800,
+              }}
+            >
+              {offer.id.startsWith("user-")
+                ? "View your listing"
+                : "View offer"}
+            </Link>
           </article>
         ))}
 
