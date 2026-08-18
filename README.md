@@ -1,4 +1,4 @@
-# FairTrade Prototype
+# LocalLoop Prototype
 
 A mobile-first old-school barter marketplace prototype built with Next.js App Router.
 
@@ -72,3 +72,4 @@ For a real MVP, add:
 ## Important
 
 The agreement language in this prototype is placeholder product copy, not legal advice. Have Australian counsel review production terms, liability allocation, consumer-law wording and membership terms before launch.
+
