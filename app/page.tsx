@@ -12,7 +12,7 @@ export default function Home() {
           <p>Find people nearby, negotiate a fair exchange, put the deal in writing, and build reputation through completed trades.</p>
           <div className="hero-actions">
             <Link className="btn" href="/post">Post what you need</Link>
-            <Link className="btn secondary" href="#browse">Browse offers</Link>
+            <Link className="btn secondary" href="/browse">Browse offers</Link>
           </div>
         </div>
         <div className="card hero-card">
