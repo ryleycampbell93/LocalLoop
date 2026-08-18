@@ -1,7 +1,25 @@
-import Link from "next/link";
+"use client";
 
-const listings = {
-  "mitre10-pambula-pickup": {
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+
+type Listing = {
+  id: string;
+  type?: string;
+  title: string;
+  person: string;
+  town: string;
+  distance?: number;
+  category: string;
+  offers: string;
+  wants: string;
+  description?: string;
+};
+
+const demoListings: Listing[] = [
+  {
+    id: "mitre10-pambula-pickup",
     title: "Mitre 10 Pambula pickup",
     person: "Chris",
     town: "Pambula",
@@ -9,64 +27,49 @@ const listings = {
     offers:
       "Can collect a prepaid hardware order from Mitre 10 Pambula and bring it toward Cooma.",
     wants:
-      "Firewood, a hand with fencing, or another useful local favour.",
+      "Firewood, fresh produce, or another useful local favour.",
     description:
       "Ideal for someone already travelling inland who can save another local a long round trip.",
   },
-
-  "merimbula-pharmacy-pickup": {
+  {
+    id: "merimbula-pharmacy-pickup",
     title: "Merimbula pharmacy pickup",
     person: "Emma",
     town: "Merimbula",
     category: "Pickups & Errands",
     offers:
-      "Can collect eligible prepaid pharmacy items from Merimbula when already travelling inland.",
+      "Can collect eligible prepaid pharmacy items when already travelling inland.",
     wants:
       "Garden help, dog minding, or help moving a few items.",
     description:
-      "For eligible prepaid items only, with collection arranged in line with the pharmacy's requirements.",
+      "For eligible prepaid items where the pharmacy allows third-party collection.",
   },
-
-  "click-and-collect-coast": {
+  {
+    id: "click-and-collect-coast",
     title: "Click & Collect pickup",
     person: "Dan",
     town: "Merimbula",
     category: "Pickups & Errands",
     offers:
-      "Heading from the coast toward Cooma and can collect a prepaid Click & Collect order on the way.",
+      "Heading from the coast toward Cooma and can collect a prepaid Click & Collect order.",
     wants:
-      "Trailer use, mechanical help, or help splitting firewood.",
+      "Fresh eggs, mechanical help, trailer use, or another useful favour.",
     description:
       "A practical regional pickup for someone already making the trip.",
   },
-
-  "lamb-barter-bombala": {
-    title: "Farm produce available to barter",
-    person: "Mick",
-    town: "Bombala",
-    category: "Farm & Produce",
-    offers:
-      "Locally raised farm produce available for a private barter, subject to applicable food-safety requirements.",
-    wants:
-      "Fencing help, machinery repair, or transport assistance.",
-    description:
-      "A local farm barter listing designed to connect useful skills with regional produce.",
-  },
-
-  "firewood-cooma": {
+  {
+    id: "firewood-cooma",
     title: "Firewood delivery around Cooma",
     person: "Steve",
     town: "Cooma",
-    category: "Home & Farm",
+    category: "Home & Garden",
     offers:
       "Can deliver a ute load of firewood around Cooma and nearby areas.",
     wants:
-      "Small carpentry job, welding help, or mower servicing.",
-    description:
-      "Good for locals who need firewood and have a useful skill or favour to exchange.",
+      "Small carpentry work, welding help, or mower servicing.",
   },
-
-  "trailer-transport-jindabyne": {
+  {
+    id: "trailer-transport-jindabyne",
     title: "Trailer transport help",
     person: "Sarah",
     town: "Jindabyne",
@@ -75,11 +78,9 @@ const listings = {
       "Can help move a mower, furniture or other suitable items with a trailer.",
     wants:
       "Garden cleanup, painting help, or computer assistance.",
-    description:
-      "Useful for local moves and pickups where someone already has the trailer and time.",
   },
-
-  "fencing-bombala": {
+  {
+    id: "fencing-bombala",
     title: "Need a hand with fencing",
     person: "Tom",
     town: "Bombala",
@@ -88,11 +89,9 @@ const listings = {
       "Can trade livestock-yard cleanup, firewood or general farm help.",
     wants:
       "Someone experienced to help repair and tension a section of fencing.",
-    description:
-      "A straightforward skills-for-skills farm barter.",
   },
-
-  "mechanical-cooma": {
+  {
+    id: "mechanical-cooma",
     title: "Small engine & mechanical help",
     person: "Riley",
     town: "Cooma",
@@ -100,19 +99,46 @@ const listings = {
     offers:
       "Can help with basic mower, small engine and mechanical jobs.",
     wants:
-      "Carpentry, transport help, or a useful local trade.",
-    description:
-      "Local mechanical help for small jobs, exchanged for another useful service or favour.",
+      "Carpentry, transport help, fresh produce, or another useful local trade.",
   },
-};
+];
 
-export default async function ListingPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
-  const listing = listings[id as keyof typeof listings];
+export default function ListingPage() {
+  const params = useParams();
+  const id = String(params.id);
+
+  const [savedListings, setSavedListings] = useState<Listing[]>([]);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(
+        localStorage.getItem("localloop-listings") || "[]"
+      );
+
+      if (Array.isArray(saved)) {
+        setSavedListings(saved);
+      }
+    } catch {
+      setSavedListings([]);
+    }
+
+    setLoaded(true);
+  }, []);
+
+  const listing = useMemo(() => {
+    return [...savedListings, ...demoListings].find(
+      (item) => item.id === id
+    );
+  }, [savedListings, id]);
+
+  if (!loaded) {
+    return (
+      <main className="container" style={{ padding: "3rem 0" }}>
+        Loading listing...
+      </main>
+    );
+  }
 
   if (!listing) {
     return (
@@ -133,7 +159,7 @@ export default async function ListingPage({
     <main className="container" style={{ padding: "2rem 0 4rem" }}>
       <section
         style={{
-          background: "#fff",
+          background: "#ffffff",
           border: "1px solid #ded8cd",
           borderRadius: 22,
           padding: "1.5rem",
@@ -176,27 +202,33 @@ export default async function ListingPage({
             marginBottom: "1rem",
           }}
         >
-          <p style={{ marginBottom: "0.6rem" }}>
-            <strong>What they offer:</strong> {listing.offers}
+          <p style={{ marginBottom: "0.7rem" }}>
+            <strong>Offers:</strong>
+            <br />
+            {listing.offers}
           </p>
 
           <p style={{ margin: 0 }}>
-            <strong>What they want:</strong> {listing.wants}
+            <strong>Wants:</strong>
+            <br />
+            {listing.wants}
           </p>
         </div>
 
-        <p style={{ lineHeight: 1.6, marginBottom: "1.5rem" }}>
-          {listing.description}
-        </p>
+        {listing.description && (
+          <p style={{ lineHeight: 1.6, marginBottom: "1.5rem" }}>
+            {listing.description}
+          </p>
+        )}
 
         <div style={{ display: "grid", gap: "0.8rem" }}>
           <Link
-            href={`/propose?listing=${id}`}
+            href={`/propose?listing=${listing.id}`}
             style={{
               display: "block",
               textAlign: "center",
               background: "#315c44",
-              color: "#fff",
+              color: "#ffffff",
               padding: "1rem",
               borderRadius: 12,
               textDecoration: "none",
