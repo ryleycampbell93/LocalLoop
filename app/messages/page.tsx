@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
 
 const listings = {
   "carpentry-cooma": {
@@ -28,12 +28,15 @@ const listings = {
   },
 };
 
-export default function MessagesPage() {
+function MessagesContent() {
   const searchParams = useSearchParams();
   const listingId = searchParams.get("listing") || "carpentry-cooma";
 
   const listing = useMemo(() => {
-    return listings[listingId as keyof typeof listings] || listings["carpentry-cooma"];
+    return (
+      listings[listingId as keyof typeof listings] ||
+      listings["carpentry-cooma"]
+    );
   }, [listingId]);
 
   const [yourOffer, setYourOffer] = useState("");
@@ -52,11 +55,22 @@ export default function MessagesPage() {
           marginBottom: "1.2rem",
         }}
       >
-        <p style={{ fontWeight: 800, color: "#315c44", marginBottom: "0.4rem" }}>
+        <p
+          style={{
+            fontWeight: 800,
+            color: "#315c44",
+            marginBottom: "0.4rem",
+          }}
+        >
           PROPOSE A BARTER
         </p>
 
-        <h1 style={{ fontSize: "clamp(2rem, 8vw, 3.6rem)", marginBottom: "0.7rem" }}>
+        <h1
+          style={{
+            fontSize: "clamp(2rem, 8vw, 3.6rem)",
+            marginBottom: "0.7rem",
+          }}
+        >
           Make an offer to {listing.person}
         </h1>
 
@@ -188,9 +202,10 @@ export default function MessagesPage() {
             }}
           >
             <h3 style={{ marginTop: 0 }}>Proposal sent</h3>
+
             <p>
-              This prototype has recorded your proposed exchange. The next step is
-              to turn the agreed terms into a written barter agreement.
+              Your proposed exchange is ready to turn into a written barter
+              agreement.
             </p>
 
             <Link
@@ -213,5 +228,19 @@ export default function MessagesPage() {
         )}
       </section>
     </main>
+  );
+}
+
+export default function MessagesPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="container" style={{ padding: "2rem 0" }}>
+          Loading barter proposal...
+        </main>
+      }
+    >
+      <MessagesContent />
+    </Suspense>
   );
 }
