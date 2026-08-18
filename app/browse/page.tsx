@@ -5,46 +5,104 @@ import { useMemo, useState } from "react";
 
 const offers = [
   {
-    id: "carpentry-cooma",
-    title: "Carpentry & small repairs",
-    person: "Ryley",
-    town: "Cooma",
-    distance: 4,
-    category: "Trades",
-    offers: "Shelves, doors, timber repairs and small carpentry jobs",
-    wants: "Mechanical work, landscaping or photography",
+    id: "mitre10-pambula-pickup",
+    title: "Mitre 10 Pambula pickup",
+    person: "Chris",
+    town: "Pambula",
+    distance: 104,
+    category: "Pickups & Errands",
+    offers: "Can collect a prepaid hardware order from Mitre 10 Pambula and bring it toward Cooma.",
+    wants: "Firewood, a hand with fencing, or another useful local favour.",
   },
   {
-    id: "gardening-jindabyne",
-    title: "Gardening & yard help",
+    id: "merimbula-pharmacy-pickup",
+    title: "Merimbula pharmacy pickup",
+    person: "Emma",
+    town: "Merimbula",
+    distance: 108,
+    category: "Pickups & Errands",
+    offers: "Can collect eligible prepaid pharmacy items from Merimbula when already travelling inland.",
+    wants: "Garden help, dog minding, or help moving a few items.",
+  },
+  {
+    id: "click-and-collect-coast",
+    title: "Click & Collect pickup",
+    person: "Dan",
+    town: "Merimbula",
+    distance: 110,
+    category: "Pickups & Errands",
+    offers: "Heading from the coast toward Cooma and can collect a prepaid Click & Collect order on the way.",
+    wants: "Trailer use, mechanical help, or help splitting firewood.",
+  },
+  {
+    id: "lamb-barter-bombala",
+    title: "Farm produce available to barter",
+    person: "Mick",
+    town: "Bombala",
+    distance: 82,
+    category: "Farm & Produce",
+    offers: "Locally raised farm produce available for a private barter, subject to local food-safety rules.",
+    wants: "Fencing help, machinery repair, or transport assistance.",
+  },
+  {
+    id: "firewood-cooma",
+    title: "Firewood delivery around Cooma",
+    person: "Steve",
+    town: "Cooma",
+    distance: 6,
+    category: "Home & Farm",
+    offers: "Can deliver a ute load of firewood around Cooma and nearby areas.",
+    wants: "Small carpentry job, welding help, or mower servicing.",
+  },
+  {
+    id: "trailer-transport-jindabyne",
+    title: "Trailer transport help",
     person: "Sarah",
     town: "Jindabyne",
-    distance: 18,
-    category: "Home & Garden",
-    offers: "Garden cleanups, mowing and basic yard maintenance",
-    wants: "Website help, bookkeeping or moving assistance",
+    distance: 61,
+    category: "Transport",
+    offers: "Can help move a mower, furniture or other suitable items with a trailer.",
+    wants: "Garden cleanup, painting help, or computer assistance.",
   },
   {
-    id: "tech-berridale",
-    title: "Computer & website help",
-    person: "James",
-    town: "Berridale",
-    distance: 29,
-    category: "Tech",
-    offers: "Basic websites, computer setup and troubleshooting",
-    wants: "Painting, gardening or handyman help",
+    id: "fencing-bombala",
+    title: "Need a hand with fencing",
+    person: "Tom",
+    town: "Bombala",
+    distance: 84,
+    category: "Trades & Farm",
+    offers: "Can trade livestock-yard cleanup, firewood or general farm help.",
+    wants: "Someone experienced to help repair and tension a section of fencing.",
+  },
+  {
+    id: "mechanical-cooma",
+    title: "Small engine & mechanical help",
+    person: "Riley",
+    town: "Cooma",
+    distance: 4,
+    category: "Mechanical",
+    offers: "Can help with basic mower, small engine and mechanical jobs.",
+    wants: "Carpentry, transport help, or a useful local trade.",
   },
 ];
 
 export default function BrowsePage() {
   const [search, setSearch] = useState("");
   const [town, setTown] = useState("All towns");
-  const [distance, setDistance] = useState("50");
+  const [distance, setDistance] = useState("150");
   const [category, setCategory] = useState("All categories");
+
+  const towns = ["All towns", ...Array.from(new Set(offers.map((offer) => offer.town)))];
+
+  const categories = [
+    "All categories",
+    ...Array.from(new Set(offers.map((offer) => offer.category))),
+  ];
 
   const filteredOffers = useMemo(() => {
     return offers.filter((offer) => {
-      const text = `${offer.title} ${offer.offers} ${offer.wants} ${offer.person}`.toLowerCase();
+      const text =
+        `${offer.title} ${offer.offers} ${offer.wants} ${offer.person} ${offer.town}`.toLowerCase();
 
       const matchesSearch = text.includes(search.toLowerCase());
       const matchesTown = town === "All towns" || offer.town === town;
@@ -79,7 +137,7 @@ export default function BrowsePage() {
             marginBottom: "0.5rem",
           }}
         >
-          LOCAL OFFERS
+          LOCALLOOP NEAR YOU
         </p>
 
         <h1
@@ -97,17 +155,17 @@ export default function BrowsePage() {
             color: "#5f625d",
             fontSize: "1rem",
             marginBottom: "1rem",
-            maxWidth: 680,
+            maxWidth: 720,
           }}
         >
-          Search LocalLoop for people nearby who can help, then see what
-          they want in return.
+          Find people already travelling your way, offering practical skills,
+          or looking to swap useful goods and favours around the region.
         </p>
 
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Try: lawn mowing, mechanic, website help..."
+          placeholder="Try: Pambula pickup, fencing, firewood, trailer..."
           style={{
             width: "100%",
             padding: "1rem",
@@ -137,10 +195,9 @@ export default function BrowsePage() {
             background: "#fff",
           }}
         >
-          <option>All towns</option>
-          <option>Cooma</option>
-          <option>Jindabyne</option>
-          <option>Berridale</option>
+          {towns.map((item) => (
+            <option key={item}>{item}</option>
+          ))}
         </select>
 
         <select
@@ -153,9 +210,10 @@ export default function BrowsePage() {
             background: "#fff",
           }}
         >
-          <option value="10">Within 10 km</option>
           <option value="25">Within 25 km</option>
           <option value="50">Within 50 km</option>
+          <option value="100">Within 100 km</option>
+          <option value="150">Within 150 km</option>
         </select>
 
         <select
@@ -168,10 +226,9 @@ export default function BrowsePage() {
             background: "#fff",
           }}
         >
-          <option>All categories</option>
-          <option>Trades</option>
-          <option>Home & Garden</option>
-          <option>Tech</option>
+          {categories.map((item) => (
+            <option key={item}>{item}</option>
+          ))}
         </select>
       </section>
 
