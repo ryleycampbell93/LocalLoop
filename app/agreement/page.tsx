@@ -55,13 +55,7 @@ export default function AgreementPage() {
         </p>
       </section>
 
-      <section
-        style={{
-          display: "grid",
-          gap: "1rem",
-          marginBottom: "1rem",
-        }}
-      >
+      <section style={{ display: "grid", gap: "1rem", marginBottom: "1rem" }}>
         <div
           style={{
             background: "#fff",
@@ -313,8 +307,7 @@ export default function AgreementPage() {
             >
               <strong>Change requested.</strong>
               <p style={{ marginBottom: 0 }}>
-                Update the agreement above, then both people can review the new
-                version before accepting.
+                Update the agreement above, then both people can review the new version before accepting.
               </p>
             </div>
           )}
@@ -334,12 +327,11 @@ export default function AgreementPage() {
           </p>
 
           <p style={{ color: "#666" }}>
-            In the production app, this is where we’ll save the agreement version,
-            acceptance timestamps and both users’ confirmation.
+            In the production app, this is where the agreement version and acceptance timestamps will be saved.
           </p>
 
           <Link
-            href="/profile"
+            href="/barters"
             style={{
               display: "block",
               textAlign: "center",
