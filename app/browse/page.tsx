@@ -1,9 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-const offers = [
+type Listing = {
+  id: string;
+  type?: string;
+  title: string;
+  person: string;
+  town: string;
+  distance: number;
+  category: string;
+  offers: string;
+  wants: string;
+};
+
+const demoOffers: Listing[] = [
   {
     id: "mitre10-pambula-pickup",
     title: "Mitre 10 Pambula pickup",
@@ -11,8 +23,10 @@ const offers = [
     town: "Pambula",
     distance: 104,
     category: "Pickups & Errands",
-    offers: "Can collect a prepaid hardware order from Mitre 10 Pambula and bring it toward Cooma.",
-    wants: "Firewood, a hand with fencing, or another useful local favour.",
+    offers:
+      "Can collect a prepaid hardware order from Mitre 10 Pambula and bring it toward Cooma.",
+    wants:
+      "Firewood, a hand with fencing, or another useful local favour.",
   },
   {
     id: "merimbula-pharmacy-pickup",
@@ -21,8 +35,10 @@ const offers = [
     town: "Merimbula",
     distance: 108,
     category: "Pickups & Errands",
-    offers: "Can collect eligible prepaid pharmacy items from Merimbula when already travelling inland.",
-    wants: "Garden help, dog minding, or help moving a few items.",
+    offers:
+      "Can collect eligible prepaid pharmacy items from Merimbula when already travelling inland.",
+    wants:
+      "Garden help, dog minding, or help moving a few items.",
   },
   {
     id: "click-and-collect-coast",
@@ -31,18 +47,10 @@ const offers = [
     town: "Merimbula",
     distance: 110,
     category: "Pickups & Errands",
-    offers: "Heading from the coast toward Cooma and can collect a prepaid Click & Collect order on the way.",
-    wants: "Trailer use, mechanical help, or help splitting firewood.",
-  },
-  {
-    id: "lamb-barter-bombala",
-    title: "Farm produce available to barter",
-    person: "Mick",
-    town: "Bombala",
-    distance: 82,
-    category: "Farm & Produce",
-    offers: "Locally raised farm produce available for a private barter, subject to local food-safety rules.",
-    wants: "Fencing help, machinery repair, or transport assistance.",
+    offers:
+      "Heading from the coast toward Cooma and can collect a prepaid Click & Collect order on the way.",
+    wants:
+      "Trailer use, mechanical help, or help splitting firewood.",
   },
   {
     id: "firewood-cooma",
@@ -50,9 +58,11 @@ const offers = [
     person: "Steve",
     town: "Cooma",
     distance: 6,
-    category: "Home & Farm",
-    offers: "Can deliver a ute load of firewood around Cooma and nearby areas.",
-    wants: "Small carpentry job, welding help, or mower servicing.",
+    category: "Home & Garden",
+    offers:
+      "Can deliver a ute load of firewood around Cooma and nearby areas.",
+    wants:
+      "Small carpentry job, welding help, or mower servicing.",
   },
   {
     id: "trailer-transport-jindabyne",
@@ -61,8 +71,10 @@ const offers = [
     town: "Jindabyne",
     distance: 61,
     category: "Transport",
-    offers: "Can help move a mower, furniture or other suitable items with a trailer.",
-    wants: "Garden cleanup, painting help, or computer assistance.",
+    offers:
+      "Can help move a mower, furniture or other suitable items with a trailer.",
+    wants:
+      "Garden cleanup, painting help, or computer assistance.",
   },
   {
     id: "fencing-bombala",
@@ -71,8 +83,10 @@ const offers = [
     town: "Bombala",
     distance: 84,
     category: "Trades & Farm",
-    offers: "Can trade livestock-yard cleanup, firewood or general farm help.",
-    wants: "Someone experienced to help repair and tension a section of fencing.",
+    offers:
+      "Can trade livestock-yard cleanup, firewood or general farm help.",
+    wants:
+      "Someone experienced to help repair and tension a section of fencing.",
   },
   {
     id: "mechanical-cooma",
@@ -81,23 +95,51 @@ const offers = [
     town: "Cooma",
     distance: 4,
     category: "Mechanical",
-    offers: "Can help with basic mower, small engine and mechanical jobs.",
-    wants: "Carpentry, transport help, or a useful local trade.",
+    offers:
+      "Can help with basic mower, small engine and mechanical jobs.",
+    wants:
+      "Carpentry, transport help, or a useful local trade.",
   },
 ];
 
 export default function BrowsePage() {
+  const [savedListings, setSavedListings] = useState<Listing[]>([]);
   const [search, setSearch] = useState("");
   const [town, setTown] = useState("All towns");
   const [distance, setDistance] = useState("150");
   const [category, setCategory] = useState("All categories");
 
-  const towns = ["All towns", ...Array.from(new Set(offers.map((offer) => offer.town)))];
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(
+        localStorage.getItem("localloop-listings") || "[]"
+      );
 
-  const categories = [
-    "All categories",
-    ...Array.from(new Set(offers.map((offer) => offer.category))),
-  ];
+      if (Array.isArray(stored)) {
+        setSavedListings(stored);
+      }
+    } catch {
+      setSavedListings([]);
+    }
+  }, []);
+
+  const offers = useMemo(
+    () => [...savedListings, ...demoOffers],
+    [savedListings]
+  );
+
+  const towns = useMemo(
+    () => ["All towns", ...Array.from(new Set(offers.map((offer) => offer.town)))],
+    [offers]
+  );
+
+  const categories = useMemo(
+    () => [
+      "All categories",
+      ...Array.from(new Set(offers.map((offer) => offer.category))),
+    ],
+    [offers]
+  );
 
   const filteredOffers = useMemo(() => {
     return offers.filter((offer) => {
@@ -117,7 +159,7 @@ export default function BrowsePage() {
         matchesCategory
       );
     });
-  }, [search, town, distance, category]);
+  }, [offers, search, town, distance, category]);
 
   return (
     <main className="container" style={{ padding: "2rem 0 4rem" }}>
@@ -158,14 +200,14 @@ export default function BrowsePage() {
             maxWidth: 720,
           }}
         >
-          Find people already travelling your way, offering practical skills,
-          or looking to swap useful goods and favours around the region.
+          Find local people offering practical help, transport, skills and useful
+          trades around the region.
         </p>
 
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Try: Pambula pickup, fencing, firewood, trailer..."
+          placeholder="Try: Pambula pickup, firewood, trailer, mower..."
           style={{
             width: "100%",
             padding: "1rem",
@@ -302,21 +344,36 @@ export default function BrowsePage() {
               </p>
             </div>
 
-            <Link
-              href={`/listing/${offer.id}`}
-              style={{
-                display: "block",
-                textAlign: "center",
-                background: "#315c44",
-                color: "#fff",
-                padding: "0.9rem 1rem",
-                borderRadius: 12,
-                textDecoration: "none",
-                fontWeight: 800,
-              }}
-            >
-              View offer
-            </Link>
+            {offer.id.startsWith("user-") ? (
+              <div
+                style={{
+                  background: "#eef4ef",
+                  color: "#315c44",
+                  padding: "0.8rem",
+                  borderRadius: 12,
+                  textAlign: "center",
+                  fontWeight: 800,
+                }}
+              >
+                Your new listing ✓
+              </div>
+            ) : (
+              <Link
+                href={`/listing/${offer.id}`}
+                style={{
+                  display: "block",
+                  textAlign: "center",
+                  background: "#315c44",
+                  color: "#fff",
+                  padding: "0.9rem 1rem",
+                  borderRadius: 12,
+                  textDecoration: "none",
+                  fontWeight: 800,
+                }}
+              >
+                View offer
+              </Link>
+            )}
           </article>
         ))}
 
