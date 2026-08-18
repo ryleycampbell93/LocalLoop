@@ -7,24 +7,18 @@ import { useSearchParams } from "next/navigation";
 const listings = {
   "carpentry-cooma": {
     title: "Carpentry & small repairs",
-    person: "Ryley",
+    person: "Riley",
     town: "Cooma",
-    offers: "Shelves, doors, timber repairs and small carpentry jobs",
-    wants: "Mechanical work, landscaping or photography",
   },
   "gardening-jindabyne": {
     title: "Gardening & yard help",
     person: "Sarah",
     town: "Jindabyne",
-    offers: "Garden cleanups, mowing and basic yard maintenance",
-    wants: "Website help, bookkeeping or moving assistance",
   },
   "tech-berridale": {
     title: "Computer & website help",
     person: "James",
     town: "Berridale",
-    offers: "Basic websites, computer setup and troubleshooting",
-    wants: "Painting, gardening or handyman help",
   },
 };
 
@@ -39,11 +33,29 @@ function MessagesContent() {
     );
   }, [listingId]);
 
-  const [yourOffer, setYourOffer] = useState("");
-  const [theirWork, setTheirWork] = useState(listing.offers);
-  const [when, setWhen] = useState("");
-  const [notes, setNotes] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState([
+    {
+      from: listing.person,
+      text: `Hey, happy to chat about the ${listing.title.toLowerCase()} barter.`,
+    },
+  ]);
+
+  function sendMessage() {
+    const text = message.trim();
+
+    if (!text) return;
+
+    setMessages((current) => [
+      ...current,
+      {
+        from: "You",
+        text,
+      },
+    ]);
+
+    setMessage("");
+  }
 
   return (
     <main className="container" style={{ padding: "2rem 0 4rem" }}>
@@ -55,82 +67,133 @@ function MessagesContent() {
           marginBottom: "1.2rem",
         }}
       >
-        <p style={{ fontWeight: 800, color: "#315c44" }}>
-          PROPOSE A BARTER
+        <p
+          style={{
+            fontWeight: 800,
+            color: "#315c44",
+            marginBottom: "0.4rem",
+          }}
+        >
+          MESSAGES
         </p>
 
-        <h1 style={{ fontSize: "clamp(2rem, 8vw, 3.6rem)" }}>
-          Make an offer to {listing.person}
+        <h1
+          style={{
+            fontSize: "clamp(2rem, 8vw, 3.6rem)",
+            marginBottom: "0.6rem",
+          }}
+        >
+          Chat with {listing.person}
         </h1>
 
-        <p style={{ color: "#666" }}>
+        <p style={{ color: "#666", marginBottom: 0 }}>
           {listing.title} · {listing.town}
         </p>
       </section>
 
-      <section className="card" style={{ marginBottom: "1rem" }}>
-        <p>
-          <strong>{listing.person} offers:</strong> {listing.offers}
-        </p>
-        <p>
-          <strong>{listing.person} is looking for:</strong> {listing.wants}
-        </p>
+      <section
+        style={{
+          background: "#fff",
+          border: "1px solid #ded8cd",
+          borderRadius: 20,
+          padding: "1rem",
+          marginBottom: "1rem",
+          display: "grid",
+          gap: "0.8rem",
+        }}
+      >
+        {messages.map((item, index) => {
+          const isYou = item.from === "You";
+
+          return (
+            <div
+              key={`${item.from}-${index}`}
+              style={{
+                display: "flex",
+                justifyContent: isYou ? "flex-end" : "flex-start",
+              }}
+            >
+              <div
+                style={{
+                  maxWidth: "85%",
+                  background: isYou ? "#315c44" : "#f4efe3",
+                  color: isYou ? "#fff" : "#222",
+                  borderRadius: 16,
+                  padding: "0.9rem 1rem",
+                }}
+              >
+                <p
+                  style={{
+                    fontWeight: 800,
+                    marginBottom: "0.3rem",
+                  }}
+                >
+                  {item.from}
+                </p>
+
+                <p style={{ margin: 0 }}>{item.text}</p>
+              </div>
+            </div>
+          );
+        })}
       </section>
 
-      <section className="card" style={{ display: "grid", gap: "1rem" }}>
-        <label>
-          <strong>What can you offer in return?</strong>
-          <textarea
-            value={yourOffer}
-            onChange={(e) => setYourOffer(e.target.value)}
-            style={{ width: "100%", minHeight: 110, marginTop: 8 }}
-          />
-        </label>
+      <section
+        style={{
+          background: "#fff",
+          border: "1px solid #ded8cd",
+          borderRadius: 20,
+          padding: "1rem",
+        }}
+      >
+        <textarea
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder={`Message ${listing.person}...`}
+          style={{
+            width: "100%",
+            minHeight: 110,
+            padding: "0.9rem",
+            borderRadius: 12,
+            border: "1px solid #ccc",
+            fontSize: "1rem",
+            marginBottom: "0.8rem",
+          }}
+        />
 
-        <label>
-          <strong>What are you asking them to provide?</strong>
-          <textarea
-            value={theirWork}
-            onChange={(e) => setTheirWork(e.target.value)}
-            style={{ width: "100%", minHeight: 100, marginTop: 8 }}
-          />
-        </label>
+        <button
+          onClick={sendMessage}
+          disabled={!message.trim()}
+          style={{
+            width: "100%",
+            border: 0,
+            background: message.trim() ? "#315c44" : "#9da9a1",
+            color: "#fff",
+            padding: "1rem",
+            borderRadius: 12,
+            fontWeight: 800,
+            fontSize: "1rem",
+            marginBottom: "0.8rem",
+          }}
+        >
+          Send message
+        </button>
 
-        <label>
-          <strong>When?</strong>
-          <input
-            value={when}
-            onChange={(e) => setWhen(e.target.value)}
-            style={{ width: "100%", marginTop: 8 }}
-          />
-        </label>
-
-        <label>
-          <strong>Anything else to agree on?</strong>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            style={{ width: "100%", minHeight: 100, marginTop: 8 }}
-          />
-        </label>
-
-        {!submitted ? (
-          <button
-            className="btn"
-            onClick={() => setSubmitted(true)}
-            disabled={!yourOffer.trim()}
-          >
-            Send barter proposal
-          </button>
-        ) : (
-          <div>
-            <h3>Proposal sent</h3>
-            <p>Your proposed exchange is ready for a written agreement.</p>
-            <Link className="btn" href="/agreement">
-              Create barter agreement
-            </Link>
-          </div>
-        )}
+        <Link
+          href="/barters"
+          style={{
+            display: "block",
+            textAlign: "center",
+            background: "#f4efe3",
+            color: "#315c44",
+            padding: "0.9rem",
+            borderRadius: 12,
+            textDecoration: "none",
+            fontWeight: 800,
+          }}
+        >
+          Back to my barters
+        </Link>
       </section>
     </main>
   );
@@ -138,7 +201,13 @@ function MessagesContent() {
 
 export default function MessagesPage() {
   return (
-    <Suspense fallback={<main className="container">Loading...</main>}>
+    <Suspense
+      fallback={
+        <main className="container" style={{ padding: "2rem 0" }}>
+          Loading messages...
+        </main>
+      }
+    >
       <MessagesContent />
     </Suspense>
   );
