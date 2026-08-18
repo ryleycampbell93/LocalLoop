@@ -67,7 +67,6 @@ function MessagesContent() {
 
   const [savedListings, setSavedListings] = useState<Listing[]>([]);
   const [loaded, setLoaded] = useState(false);
-
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
 
@@ -93,13 +92,15 @@ function MessagesContent() {
     );
   }, [savedListings, listingId]);
 
+  const isOwnListing = listing?.person === "You";
+
   const otherPerson =
-    listing?.person === "You"
-      ? "Other person"
+    isOwnListing
+      ? "LocalLoop member"
       : listing?.person || "LocalLoop member";
 
   useEffect(() => {
-    if (!listingId) return;
+    if (!listingId || !listing) return;
 
     try {
       const stored = JSON.parse(
@@ -109,17 +110,12 @@ function MessagesContent() {
       if (Array.isArray(stored) && stored.length > 0) {
         setMessages(stored);
       } else {
-        setMessages([
-          {
-            from: "Them",
-            text: `Hi, happy to chat about "${listing?.title || "this barter"}".`,
-          },
-        ]);
+        setMessages([]);
       }
     } catch {
       setMessages([]);
     }
-  }, [listingId, listing?.title]);
+  }, [listingId, listing]);
 
   function sendMessage() {
     const text = message.trim();
@@ -197,11 +193,15 @@ function MessagesContent() {
             marginBottom: "0.6rem",
           }}
         >
-          Chat with {otherPerson}
+          {isOwnListing
+            ? listing.title
+            : `Chat with ${otherPerson}`}
         </h1>
 
         <p style={{ color: "#666", marginBottom: 0 }}>
-          {listing.title} · {listing.town}
+          {isOwnListing
+            ? `Conversation about this barter · ${listing.town}`
+            : `${listing.title} · ${listing.town}`}
         </p>
       </section>
 
@@ -214,51 +214,68 @@ function MessagesContent() {
           marginBottom: "1rem",
           display: "grid",
           gap: "0.8rem",
+          minHeight: 180,
         }}
       >
-        {messages.map((item, index) => {
-          const isYou = item.from === "You";
+        {messages.length === 0 ? (
+          <div
+            style={{
+              background: "#f8f6f1",
+              borderRadius: 14,
+              padding: "1rem",
+            }}
+          >
+            <strong>No messages yet</strong>
 
-          return (
-            <div
-              key={index}
-              style={{
-                display: "flex",
-                justifyContent: isYou ? "flex-end" : "flex-start",
-              }}
-            >
+            <p style={{ marginBottom: 0, color: "#666" }}>
+              Start a conversation about the details of this barter.
+            </p>
+          </div>
+        ) : (
+          messages.map((item, index) => {
+            const isYou = item.from === "You";
+
+            return (
               <div
+                key={index}
                 style={{
-                  maxWidth: "85%",
-                  background: isYou ? "#315c44" : "#f4efe3",
-                  color: isYou ? "#ffffff" : "#626b64",
-                  borderRadius: 16,
-                  padding: "0.9rem 1rem",
+                  display: "flex",
+                  justifyContent: isYou ? "flex-end" : "flex-start",
                 }}
               >
-                <p
+                <div
                   style={{
-                    fontWeight: 800,
-                    marginTop: 0,
-                    marginBottom: "0.3rem",
+                    maxWidth: "85%",
+                    background: isYou ? "#315c44" : "#f4efe3",
                     color: isYou ? "#ffffff" : "#626b64",
+                    borderRadius: 16,
+                    padding: "0.9rem 1rem",
                   }}
                 >
-                  {isYou ? "You" : otherPerson}
-                </p>
+                  <p
+                    style={{
+                      fontWeight: 800,
+                      marginTop: 0,
+                      marginBottom: "0.3rem",
+                      color: isYou ? "#ffffff" : "#626b64",
+                    }}
+                  >
+                    {isYou ? "You" : otherPerson}
+                  </p>
 
-                <p
-                  style={{
-                    margin: 0,
-                    color: isYou ? "#ffffff" : "#626b64",
-                  }}
-                >
-                  {item.text}
-                </p>
+                  <p
+                    style={{
+                      margin: 0,
+                      color: isYou ? "#ffffff" : "#626b64",
+                    }}
+                  >
+                    {item.text}
+                  </p>
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </section>
 
       <section
@@ -272,7 +289,11 @@ function MessagesContent() {
         <textarea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder={`Message ${otherPerson}...`}
+          placeholder={
+            isOwnListing
+              ? "Write a message about this barter..."
+              : `Message ${otherPerson}...`
+          }
           style={{
             width: "100%",
             minHeight: 110,
