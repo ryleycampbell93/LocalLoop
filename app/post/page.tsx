@@ -1,7 +1,12 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { ChangeEvent, FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+
+type Photo = {
+  id: string;
+  dataUrl: string;
+};
 
 export default function PostPage() {
   const router = useRouter();
@@ -17,6 +22,7 @@ export default function PostPage() {
   const [toLocation, setToLocation] = useState("");
 
   const [distance, setDistance] = useState("10");
+  const [photos, setPhotos] = useState<Photo[]>([]);
   const [saved, setSaved] = useState(false);
 
   const usesRoute =
@@ -33,6 +39,44 @@ export default function PostPage() {
       ? "e.g. Two dozen fresh eggs, firewood, garden help, mechanical help or another useful favour."
       : "e.g. Fresh produce, garden help, firewood, transport help or open to suggestions.";
   }, [type]);
+
+  function addPhotos(event: ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files || []);
+    const remainingSlots = 5 - photos.length;
+    const selected = files.slice(0, remainingSlots);
+
+    selected.forEach((file) => {
+      if (!file.type.startsWith("image/")) return;
+
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        if (typeof reader.result !== "string") return;
+
+        setPhotos((current) => {
+          if (current.length >= 5) return current;
+
+          return [
+            ...current,
+            {
+              id: `${Date.now()}-${Math.random()}`,
+              dataUrl: reader.result as string,
+            },
+          ];
+        });
+      };
+
+      reader.readAsDataURL(file);
+    });
+
+    event.target.value = "";
+  }
+
+  function removePhoto(id: string) {
+    setPhotos((current) =>
+      current.filter((photo) => photo.id !== id)
+    );
+  }
 
   function submitListing(event: FormEvent) {
     event.preventDefault();
@@ -82,6 +126,7 @@ export default function PostPage() {
 
       description: description.trim(),
       exchange: exchange.trim(),
+      photos: photos.map((photo) => photo.dataUrl),
       createdAt: new Date().toISOString(),
     };
 
@@ -97,10 +142,10 @@ export default function PostPage() {
         JSON.stringify([listing, ...current])
       );
     } catch {
-      localStorage.setItem(
-        "localloop-listings",
-        JSON.stringify([listing])
+      alert(
+        "Those photos are too large for this prototype. Try fewer or smaller photos."
       );
+      return;
     }
 
     setSaved(true);
@@ -120,8 +165,8 @@ export default function PostPage() {
         </h1>
 
         <p>
-          Post what you need or what you can offer, then tell locals what
-          you&apos;d be happy to exchange.
+          Add a few photos so people can see exactly what the job,
+          item or pickup involves.
         </p>
 
         <div className="card">
@@ -181,6 +226,100 @@ export default function PostPage() {
                 placeholder={exchangePlaceholder}
               />
             </label>
+
+            <div className="label">
+              <strong>Photos</strong>
+              <span style={{ color: "#6c746d", fontSize: "0.9rem" }}>
+                Add up to 5 photos
+              </span>
+
+              <label
+                style={{
+                  display: "block",
+                  border: "2px dashed #cfd7d1",
+                  borderRadius: 16,
+                  padding: "1.2rem",
+                  textAlign: "center",
+                  background: "#f8faf7",
+                  cursor: "pointer",
+                }}
+              >
+                <strong>
+                  {photos.length === 0
+                    ? "Add photos"
+                    : "Add more photos"}
+                </strong>
+
+                <p style={{ margin: "0.35rem 0 0" }}>
+                  Take a photo or choose from your library
+                </p>
+
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={addPhotos}
+                  disabled={photos.length >= 5}
+                  style={{ display: "none" }}
+                />
+              </label>
+
+              {photos.length > 0 && (
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns:
+                      "repeat(auto-fit, minmax(120px, 1fr))",
+                    gap: "0.8rem",
+                    marginTop: "0.8rem",
+                  }}
+                >
+                  {photos.map((photo) => (
+                    <div
+                      key={photo.id}
+                      style={{
+                        position: "relative",
+                        borderRadius: 14,
+                        overflow: "hidden",
+                        border: "1px solid #ded8cd",
+                        background: "#fff",
+                      }}
+                    >
+                      <img
+                        src={photo.dataUrl}
+                        alt="Listing preview"
+                        style={{
+                          display: "block",
+                          width: "100%",
+                          height: 130,
+                          objectFit: "cover",
+                        }}
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() => removePhoto(photo.id)}
+                        style={{
+                          position: "absolute",
+                          top: 8,
+                          right: 8,
+                          width: 34,
+                          height: 34,
+                          borderRadius: "50%",
+                          border: 0,
+                          background: "rgba(0,0,0,0.7)",
+                          color: "#fff",
+                          fontWeight: 900,
+                        }}
+                        aria-label="Remove photo"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
             <label className="label">
               Category
