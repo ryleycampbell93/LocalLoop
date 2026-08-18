@@ -122,6 +122,29 @@ function ProposeContent() {
     }
   }, [listing]);
 
+  function saveProposal() {
+    if (!listing || !yourOffer.trim()) return;
+
+    const proposal = {
+      listingId: listing.id,
+      listingTitle: listing.title,
+      listingTown: listing.town,
+      otherPerson: listing.person === "You" ? "Listing owner" : listing.person,
+      yourOffer: yourOffer.trim(),
+      theirWork: theirWork.trim(),
+      when: when.trim(),
+      notes: notes.trim(),
+      createdAt: new Date().toISOString(),
+    };
+
+    localStorage.setItem(
+      "localloop-current-proposal",
+      JSON.stringify(proposal)
+    );
+
+    setSubmitted(true);
+  }
+
   if (!loaded) {
     return (
       <main className="container" style={{ padding: "2rem 0" }}>
@@ -145,6 +168,12 @@ function ProposeContent() {
     );
   }
 
+  const displayPerson =
+    listing.person === "You" ? "the listing owner" : listing.person;
+
+  const subjectLabel =
+    listing.person === "You" ? "They" : listing.person;
+
   return (
     <main className="container" style={{ padding: "2rem 0 4rem" }}>
       <section
@@ -160,7 +189,7 @@ function ProposeContent() {
         </p>
 
         <h1 style={{ fontSize: "clamp(2rem, 8vw, 3.6rem)" }}>
-          Make an offer to {listing.person}
+          Make an offer to {displayPerson}
         </h1>
 
         <p style={{ color: "#666" }}>
@@ -170,11 +199,11 @@ function ProposeContent() {
 
       <section className="card" style={{ marginBottom: "1rem" }}>
         <p>
-          <strong>{listing.person} offers:</strong> {listing.offers}
+          <strong>{subjectLabel} offers:</strong> {listing.offers}
         </p>
 
         <p>
-          <strong>{listing.person} is looking for:</strong> {listing.wants}
+          <strong>{subjectLabel} is looking for:</strong> {listing.wants}
         </p>
       </section>
 
@@ -252,7 +281,7 @@ function ProposeContent() {
         {!submitted ? (
           <button
             className="btn"
-            onClick={() => setSubmitted(true)}
+            onClick={saveProposal}
             disabled={!yourOffer.trim()}
           >
             Send barter proposal
@@ -268,7 +297,7 @@ function ProposeContent() {
             <h3>Proposal ready ✓</h3>
 
             <p>
-              Next, turn the proposed exchange into a written barter agreement.
+              Your actual proposal terms have been saved for the agreement.
             </p>
 
             <Link
