@@ -1,25 +1,125 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+type Proposal = {
+  listingId: string;
+  listingTitle: string;
+  listingTown: string;
+  otherPerson: string;
+  yourOffer: string;
+  theirWork: string;
+  when: string;
+  notes: string;
+  createdAt: string;
+};
 
 export default function AgreementPage() {
-  const [partyA, setPartyA] = useState("Ryley");
-  const [partyAProvides, setPartyAProvides] = useState(
-    "Small carpentry repairs and installation work"
-  );
+  const [loaded, setLoaded] = useState(false);
+  const [proposal, setProposal] = useState<Proposal | null>(null);
 
+  const [partyA, setPartyA] = useState("");
+  const [partyAProvides, setPartyAProvides] = useState("");
   const [partyB, setPartyB] = useState("You");
-  const [partyBProvides, setPartyBProvides] = useState(
-    "Mechanical work / lawn mower service"
-  );
+  const [partyBProvides, setPartyBProvides] = useState("");
 
   const [date, setDate] = useState("");
   const [location, setLocation] = useState("");
   const [materials, setMaterials] = useState("");
   const [conditions, setConditions] = useState("");
+
   const [accepted, setAccepted] = useState(false);
   const [changeRequested, setChangeRequested] = useState(false);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("localloop-current-proposal");
+
+      if (stored) {
+        const parsed: Proposal = JSON.parse(stored);
+
+        setProposal(parsed);
+        setPartyA(parsed.otherPerson || "Listing owner");
+        setPartyAProvides(parsed.theirWork || "");
+        setPartyB("You");
+        setPartyBProvides(parsed.yourOffer || "");
+        setDate(parsed.when || "");
+        setLocation(parsed.listingTown || "");
+        setConditions(parsed.notes || "");
+      }
+    } catch {
+      setProposal(null);
+    }
+
+    setLoaded(true);
+  }, []);
+
+  function acceptAgreement() {
+    const barter = {
+      id: `barter-${Date.now()}`,
+      listingId: proposal?.listingId || "",
+      title: proposal?.listingTitle || "LocalLoop barter",
+      with: partyA,
+      town: proposal?.listingTown || location,
+      status: "Agreed",
+      when: date,
+      where: location,
+      youProvide: partyBProvides,
+      theyProvide: partyAProvides,
+      materials,
+      conditions,
+      acceptedAt: new Date().toISOString(),
+    };
+
+    try {
+      const existing = JSON.parse(
+        localStorage.getItem("localloop-barters") || "[]"
+      );
+
+      const current = Array.isArray(existing) ? existing : [];
+
+      localStorage.setItem(
+        "localloop-barters",
+        JSON.stringify([barter, ...current])
+      );
+    } catch {
+      localStorage.setItem(
+        "localloop-barters",
+        JSON.stringify([barter])
+      );
+    }
+
+    setAccepted(true);
+    setChangeRequested(false);
+  }
+
+  if (!loaded) {
+    return (
+      <main className="container" style={{ padding: "2rem 0" }}>
+        Loading agreement...
+      </main>
+    );
+  }
+
+  if (!proposal) {
+    return (
+      <main className="container" style={{ padding: "3rem 0" }}>
+        <div className="card">
+          <h1>No proposal found</h1>
+
+          <p>
+            Start from a listing and create a barter proposal before making an
+            agreement.
+          </p>
+
+          <Link className="btn" href="/browse">
+            Browse listings
+          </Link>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="container" style={{ padding: "2rem 0 4rem" }}>
@@ -51,11 +151,17 @@ export default function AgreementPage() {
         </h1>
 
         <p style={{ color: "#666", marginBottom: 0 }}>
-          Confirm exactly what each person is providing before the barter begins.
+          {proposal.listingTitle} · {proposal.listingTown}
         </p>
       </section>
 
-      <section style={{ display: "grid", gap: "1rem", marginBottom: "1rem" }}>
+      <section
+        style={{
+          display: "grid",
+          gap: "1rem",
+          marginBottom: "1rem",
+        }}
+      >
         <div
           style={{
             background: "#fff",
@@ -66,6 +172,7 @@ export default function AgreementPage() {
         >
           <label>
             <strong>Party A</strong>
+
             <input
               value={partyA}
               onChange={(e) => setPartyA(e.target.value)}
@@ -81,6 +188,7 @@ export default function AgreementPage() {
 
           <label style={{ display: "block", marginTop: "1rem" }}>
             <strong>What Party A provides</strong>
+
             <textarea
               value={partyAProvides}
               onChange={(e) => setPartyAProvides(e.target.value)}
@@ -106,6 +214,7 @@ export default function AgreementPage() {
         >
           <label>
             <strong>Party B</strong>
+
             <input
               value={partyB}
               onChange={(e) => setPartyB(e.target.value)}
@@ -121,6 +230,7 @@ export default function AgreementPage() {
 
           <label style={{ display: "block", marginTop: "1rem" }}>
             <strong>What Party B provides</strong>
+
             <textarea
               value={partyBProvides}
               onChange={(e) => setPartyBProvides(e.target.value)}
@@ -150,10 +260,11 @@ export default function AgreementPage() {
       >
         <label>
           <strong>Date / timeframe</strong>
+
           <input
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            placeholder="Example: Saturday 10am or within 7 days"
+            placeholder="Example: Saturday 10am"
             style={{
               width: "100%",
               marginTop: "0.5rem",
@@ -166,6 +277,7 @@ export default function AgreementPage() {
 
         <label>
           <strong>Location</strong>
+
           <input
             value={location}
             onChange={(e) => setLocation(e.target.value)}
@@ -182,10 +294,11 @@ export default function AgreementPage() {
 
         <label>
           <strong>Who supplies materials / equipment?</strong>
+
           <textarea
             value={materials}
             onChange={(e) => setMaterials(e.target.value)}
-            placeholder="Example: Ryley supplies tools. You supply replacement parts."
+            placeholder="Tools, fuel, materials, replacement parts..."
             style={{
               width: "100%",
               minHeight: 90,
@@ -199,10 +312,11 @@ export default function AgreementPage() {
 
         <label>
           <strong>Other conditions</strong>
+
           <textarea
             value={conditions}
             onChange={(e) => setConditions(e.target.value)}
-            placeholder="Access, cleanup, pickup, cancellations, special conditions..."
+            placeholder="Pickup details, access, cleanup, special conditions..."
             style={{
               width: "100%",
               minHeight: 100,
@@ -265,10 +379,7 @@ export default function AgreementPage() {
       {!accepted ? (
         <section style={{ display: "grid", gap: "0.8rem" }}>
           <button
-            onClick={() => {
-              setAccepted(true);
-              setChangeRequested(false);
-            }}
+            onClick={acceptAgreement}
             style={{
               border: 0,
               background: "#315c44",
@@ -306,8 +417,10 @@ export default function AgreementPage() {
               }}
             >
               <strong>Change requested.</strong>
+
               <p style={{ marginBottom: 0 }}>
-                Update the agreement above, then both people can review the new version before accepting.
+                Update the agreement above, then review the revised version
+                before accepting.
               </p>
             </div>
           )}
@@ -323,11 +436,12 @@ export default function AgreementPage() {
           <h2 style={{ marginTop: 0 }}>Agreement accepted ✓</h2>
 
           <p>
-            This prototype now treats the current terms as the agreed version.
+            This barter has now been saved to My Barters on this device.
           </p>
 
           <p style={{ color: "#666" }}>
-            In the production app, this is where the agreement version and acceptance timestamps will be saved.
+            LocalLoop records the terms agreed between users. The prototype does
+            not guarantee or perform the exchange itself.
           </p>
 
           <Link
