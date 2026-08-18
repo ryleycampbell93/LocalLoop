@@ -55,73 +55,35 @@ function MessagesContent() {
           marginBottom: "1.2rem",
         }}
       >
-        <p
-          style={{
-            fontWeight: 800,
-            color: "#315c44",
-            marginBottom: "0.4rem",
-          }}
-        >
+        <p style={{ fontWeight: 800, color: "#315c44" }}>
           PROPOSE A BARTER
         </p>
 
-        <h1
-          style={{
-            fontSize: "clamp(2rem, 8vw, 3.6rem)",
-            marginBottom: "0.7rem",
-          }}
-        >
+        <h1 style={{ fontSize: "clamp(2rem, 8vw, 3.6rem)" }}>
           Make an offer to {listing.person}
         </h1>
 
-        <p style={{ color: "#666", marginBottom: 0 }}>
+        <p style={{ color: "#666" }}>
           {listing.title} · {listing.town}
         </p>
       </section>
 
-      <section
-        style={{
-          background: "#fff",
-          border: "1px solid #ded8cd",
-          borderRadius: 20,
-          padding: "1.2rem",
-          marginBottom: "1rem",
-        }}
-      >
-        <p style={{ marginBottom: "0.8rem" }}>
+      <section className="card" style={{ marginBottom: "1rem" }}>
+        <p>
           <strong>{listing.person} offers:</strong> {listing.offers}
         </p>
-
-        <p style={{ marginBottom: 0 }}>
+        <p>
           <strong>{listing.person} is looking for:</strong> {listing.wants}
         </p>
       </section>
 
-      <section
-        style={{
-          display: "grid",
-          gap: "1rem",
-          background: "#fff",
-          border: "1px solid #ded8cd",
-          borderRadius: 20,
-          padding: "1.2rem",
-        }}
-      >
+      <section className="card" style={{ display: "grid", gap: "1rem" }}>
         <label>
           <strong>What can you offer in return?</strong>
           <textarea
             value={yourOffer}
             onChange={(e) => setYourOffer(e.target.value)}
-            placeholder="Example: I can service your lawn mower and replace the blades."
-            style={{
-              width: "100%",
-              minHeight: 110,
-              marginTop: "0.5rem",
-              padding: "0.9rem",
-              borderRadius: 12,
-              border: "1px solid #ccc",
-              fontSize: "1rem",
-            }}
+            style={{ width: "100%", minHeight: 110, marginTop: 8 }}
           />
         </label>
 
@@ -130,15 +92,7 @@ function MessagesContent() {
           <textarea
             value={theirWork}
             onChange={(e) => setTheirWork(e.target.value)}
-            style={{
-              width: "100%",
-              minHeight: 100,
-              marginTop: "0.5rem",
-              padding: "0.9rem",
-              borderRadius: 12,
-              border: "1px solid #ccc",
-              fontSize: "1rem",
-            }}
+            style={{ width: "100%", minHeight: 100, marginTop: 8 }}
           />
         </label>
 
@@ -147,15 +101,7 @@ function MessagesContent() {
           <input
             value={when}
             onChange={(e) => setWhen(e.target.value)}
-            placeholder="Example: Saturday morning or sometime next week"
-            style={{
-              width: "100%",
-              marginTop: "0.5rem",
-              padding: "0.9rem",
-              borderRadius: 12,
-              border: "1px solid #ccc",
-              fontSize: "1rem",
-            }}
+            style={{ width: "100%", marginTop: 8 }}
           />
         </label>
 
@@ -164,64 +110,23 @@ function MessagesContent() {
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Tools, materials, pickup, timing, special conditions..."
-            style={{
-              width: "100%",
-              minHeight: 100,
-              marginTop: "0.5rem",
-              padding: "0.9rem",
-              borderRadius: 12,
-              border: "1px solid #ccc",
-              fontSize: "1rem",
-            }}
+            style={{ width: "100%", minHeight: 100, marginTop: 8 }}
           />
         </label>
 
         {!submitted ? (
           <button
+            className="btn"
             onClick={() => setSubmitted(true)}
             disabled={!yourOffer.trim()}
-            style={{
-              border: 0,
-              background: yourOffer.trim() ? "#315c44" : "#9da9a1",
-              color: "#fff",
-              padding: "1rem",
-              borderRadius: 12,
-              fontWeight: 800,
-              fontSize: "1rem",
-            }}
           >
             Send barter proposal
           </button>
         ) : (
-          <div
-            style={{
-              background: "#eef4ef",
-              borderRadius: 14,
-              padding: "1rem",
-            }}
-          >
-            <h3 style={{ marginTop: 0 }}>Proposal sent</h3>
-
-            <p>
-              Your proposed exchange is ready to turn into a written barter
-              agreement.
-            </p>
-
-            <Link
-              href="/agreement"
-              style={{
-                display: "block",
-                textAlign: "center",
-                background: "#315c44",
-                color: "#fff",
-                padding: "0.9rem",
-                borderRadius: 12,
-                textDecoration: "none",
-                fontWeight: 800,
-                marginTop: "0.8rem",
-              }}
-            >
+          <div>
+            <h3>Proposal sent</h3>
+            <p>Your proposed exchange is ready for a written agreement.</p>
+            <Link className="btn" href="/agreement">
               Create barter agreement
             </Link>
           </div>
@@ -233,13 +138,7 @@ function MessagesContent() {
 
 export default function MessagesPage() {
   return (
-    <Suspense
-      fallback={
-        <main className="container" style={{ padding: "2rem 0" }}>
-          Loading barter proposal...
-        </main>
-      }
-    >
+    <Suspense fallback={<main className="container">Loading...</main>}>
       <MessagesContent />
     </Suspense>
   );
