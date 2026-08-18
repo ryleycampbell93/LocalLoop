@@ -1,49 +1,149 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
-const listings = {
-  "carpentry-cooma": {
-    title: "Carpentry & small repairs",
-    person: "Riley",
-    town: "Cooma",
-    offers: "Shelves, doors, timber repairs and small carpentry jobs",
-    wants: "Mechanical work, landscaping or photography",
+type Listing = {
+  id: string;
+  title: string;
+  person: string;
+  town: string;
+  offers: string;
+  wants: string;
+};
+
+const demoListings: Listing[] = [
+  {
+    id: "mitre10-pambula-pickup",
+    title: "Mitre 10 Pambula pickup",
+    person: "Chris",
+    town: "Pambula",
+    offers:
+      "Can collect a prepaid hardware order from Mitre 10 Pambula and bring it toward Cooma.",
+    wants: "Firewood, fresh produce, or another useful local favour.",
   },
-  "gardening-jindabyne": {
-    title: "Gardening & yard help",
+  {
+    id: "merimbula-pharmacy-pickup",
+    title: "Merimbula pharmacy pickup",
+    person: "Emma",
+    town: "Merimbula",
+    offers:
+      "Can collect eligible prepaid pharmacy items when already travelling inland.",
+    wants: "Garden help, dog minding, or help moving a few items.",
+  },
+  {
+    id: "click-and-collect-coast",
+    title: "Click & Collect pickup",
+    person: "Dan",
+    town: "Merimbula",
+    offers:
+      "Heading from the coast toward Cooma and can collect a prepaid Click & Collect order.",
+    wants: "Fresh eggs, mechanical help, trailer use, or another useful favour.",
+  },
+  {
+    id: "firewood-cooma",
+    title: "Firewood delivery around Cooma",
+    person: "Steve",
+    town: "Cooma",
+    offers:
+      "Can deliver a ute load of firewood around Cooma and nearby areas.",
+    wants: "Small carpentry work, welding help, or mower servicing.",
+  },
+  {
+    id: "trailer-transport-jindabyne",
+    title: "Trailer transport help",
     person: "Sarah",
     town: "Jindabyne",
-    offers: "Garden cleanups, mowing and basic yard maintenance",
-    wants: "Website help, bookkeeping or moving assistance",
+    offers:
+      "Can help move a mower, furniture or other suitable items with a trailer.",
+    wants: "Garden cleanup, painting help, or computer assistance.",
   },
-  "tech-berridale": {
-    title: "Computer & website help",
-    person: "James",
-    town: "Berridale",
-    offers: "Basic websites, computer setup and troubleshooting",
-    wants: "Painting, gardening or handyman help",
+  {
+    id: "fencing-bombala",
+    title: "Need a hand with fencing",
+    person: "Tom",
+    town: "Bombala",
+    offers:
+      "Can trade livestock-yard cleanup, firewood or general farm help.",
+    wants:
+      "Someone experienced to help repair and tension a section of fencing.",
   },
-};
+  {
+    id: "mechanical-cooma",
+    title: "Small engine & mechanical help",
+    person: "Riley",
+    town: "Cooma",
+    offers:
+      "Can help with basic mower, small engine and mechanical jobs.",
+    wants:
+      "Carpentry, transport help, fresh produce, or another useful local trade.",
+  },
+];
 
 function ProposeContent() {
   const searchParams = useSearchParams();
-  const listingId = searchParams.get("listing") || "carpentry-cooma";
+  const listingId = searchParams.get("listing") || "";
 
-  const listing = useMemo(() => {
-    return (
-      listings[listingId as keyof typeof listings] ||
-      listings["carpentry-cooma"]
-    );
-  }, [listingId]);
+  const [savedListings, setSavedListings] = useState<Listing[]>([]);
+  const [loaded, setLoaded] = useState(false);
 
   const [yourOffer, setYourOffer] = useState("");
-  const [theirWork, setTheirWork] = useState(listing.offers);
+  const [theirWork, setTheirWork] = useState("");
   const [when, setWhen] = useState("");
   const [notes, setNotes] = useState("");
   const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(
+        localStorage.getItem("localloop-listings") || "[]"
+      );
+
+      if (Array.isArray(stored)) {
+        setSavedListings(stored);
+      }
+    } catch {
+      setSavedListings([]);
+    }
+
+    setLoaded(true);
+  }, []);
+
+  const listing = useMemo(() => {
+    return [...savedListings, ...demoListings].find(
+      (item) => item.id === listingId
+    );
+  }, [savedListings, listingId]);
+
+  useEffect(() => {
+    if (listing) {
+      setTheirWork(listing.offers);
+    }
+  }, [listing]);
+
+  if (!loaded) {
+    return (
+      <main className="container" style={{ padding: "2rem 0" }}>
+        Loading proposal...
+      </main>
+    );
+  }
+
+  if (!listing) {
+    return (
+      <main className="container" style={{ padding: "3rem 0" }}>
+        <div className="card">
+          <h1>Listing not found</h1>
+          <p>We couldn’t find the listing for this proposal.</p>
+
+          <Link className="btn" href="/browse">
+            Back to browse
+          </Link>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="container" style={{ padding: "2rem 0 4rem" }}>
@@ -72,6 +172,7 @@ function ProposeContent() {
         <p>
           <strong>{listing.person} offers:</strong> {listing.offers}
         </p>
+
         <p>
           <strong>{listing.person} is looking for:</strong> {listing.wants}
         </p>
@@ -80,40 +181,71 @@ function ProposeContent() {
       <section className="card" style={{ display: "grid", gap: "1rem" }}>
         <label>
           <strong>What can you offer in return?</strong>
+
           <textarea
             value={yourOffer}
             onChange={(e) => setYourOffer(e.target.value)}
-            placeholder="Example: I can service your lawn mower and replace the blades."
-            style={{ width: "100%", minHeight: 110, marginTop: 8 }}
+            placeholder="Example: Two dozen fresh eggs, transport help, garden work..."
+            style={{
+              width: "100%",
+              minHeight: 110,
+              marginTop: 8,
+              padding: "0.9rem",
+              borderRadius: 12,
+              border: "1px solid #ccc",
+            }}
           />
         </label>
 
         <label>
           <strong>What are you asking them to provide?</strong>
+
           <textarea
             value={theirWork}
             onChange={(e) => setTheirWork(e.target.value)}
-            style={{ width: "100%", minHeight: 100, marginTop: 8 }}
+            style={{
+              width: "100%",
+              minHeight: 100,
+              marginTop: 8,
+              padding: "0.9rem",
+              borderRadius: 12,
+              border: "1px solid #ccc",
+            }}
           />
         </label>
 
         <label>
           <strong>When?</strong>
+
           <input
             value={when}
             onChange={(e) => setWhen(e.target.value)}
             placeholder="Example: Saturday morning"
-            style={{ width: "100%", marginTop: 8 }}
+            style={{
+              width: "100%",
+              marginTop: 8,
+              padding: "0.9rem",
+              borderRadius: 12,
+              border: "1px solid #ccc",
+            }}
           />
         </label>
 
         <label>
           <strong>Anything else to agree on?</strong>
+
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Tools, materials, pickup, timing, special conditions..."
-            style={{ width: "100%", minHeight: 100, marginTop: 8 }}
+            placeholder="Pickup point, materials, timing, special conditions..."
+            style={{
+              width: "100%",
+              minHeight: 100,
+              marginTop: 8,
+              padding: "0.9rem",
+              borderRadius: 12,
+              border: "1px solid #ccc",
+            }}
           />
         </label>
 
@@ -141,7 +273,7 @@ function ProposeContent() {
 
             <Link
               className="btn"
-              href={`/agreement?listing=${listingId}`}
+              href={`/agreement?listing=${listing.id}`}
             >
               Create barter agreement
             </Link>
