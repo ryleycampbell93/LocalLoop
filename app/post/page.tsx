@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function PostPage() {
@@ -11,47 +11,97 @@ export default function PostPage() {
   const [description, setDescription] = useState("");
   const [exchange, setExchange] = useState("");
   const [category, setCategory] = useState("Pickups & Errands");
+
   const [location, setLocation] = useState("");
+  const [fromLocation, setFromLocation] = useState("");
+  const [toLocation, setToLocation] = useState("");
+
   const [distance, setDistance] = useState("10");
   const [saved, setSaved] = useState(false);
+
+  const usesRoute =
+    category === "Pickups & Errands" || category === "Transport";
+
+  const exchangeLabel = useMemo(() => {
+    return type === "need"
+      ? "What can you offer in exchange?"
+      : "What would you like in exchange?";
+  }, [type]);
+
+  const exchangePlaceholder = useMemo(() => {
+    return type === "need"
+      ? "e.g. Two dozen fresh eggs, firewood, garden help, mechanical help or another useful favour."
+      : "e.g. Fresh produce, garden help, firewood, transport help or open to suggestions.";
+  }, [type]);
 
   function submitListing(event: FormEvent) {
     event.preventDefault();
 
-    if (!title.trim() || !description.trim() || !location.trim()) {
-      alert("Please add a title, description and location.");
+    if (!title.trim() || !description.trim()) {
+      alert("Please add a title and description.");
       return;
     }
+
+    if (usesRoute && (!fromLocation.trim() || !toLocation.trim())) {
+      alert("Please add both the pickup/from location and destination.");
+      return;
+    }
+
+    if (!usesRoute && !location.trim()) {
+      alert("Please add a town or location.");
+      return;
+    }
+
+    const town = usesRoute ? toLocation.trim() : location.trim();
+
+    const routeText = usesRoute
+      ? `${fromLocation.trim()} → ${toLocation.trim()}`
+      : location.trim();
 
     const listing = {
       id: `user-${Date.now()}`,
       type,
       title: title.trim(),
       person: "You",
-      town: location.trim(),
+      town,
+      route: routeText,
+      from: usesRoute ? fromLocation.trim() : "",
+      to: usesRoute ? toLocation.trim() : "",
       distance: Number(distance),
       category,
+
       offers:
         type === "offer"
           ? description.trim()
           : exchange.trim() || "Open to suggestions",
+
       wants:
         type === "need"
           ? description.trim()
           : exchange.trim() || "Open to suggestions",
+
       description: description.trim(),
       exchange: exchange.trim(),
       createdAt: new Date().toISOString(),
     };
 
-    const existing = JSON.parse(
-      localStorage.getItem("localloop-listings") || "[]"
-    );
+    try {
+      const existing = JSON.parse(
+        localStorage.getItem("localloop-listings") || "[]"
+      );
 
-    localStorage.setItem(
-      "localloop-listings",
-      JSON.stringify([listing, ...existing])
-    );
+      const current = Array.isArray(existing) ? existing : [];
+
+      localStorage.setItem(
+        "localloop-listings",
+        JSON.stringify([listing, ...current])
+      );
+    } catch {
+      localStorage.setItem(
+        "localloop-listings",
+        JSON.stringify([listing])
+      );
+    }
 
     setSaved(true);
 
@@ -96,58 +146,97 @@ export default function PostPage() {
                 className="input"
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
-                placeholder="e.g. Need a Mitre 10 Pambula pickup"
+                placeholder={
+                  type === "need"
+                    ? "e.g. Need a tractor picked up from Pambula"
+                    : "e.g. Can deliver firewood around Cooma"
+                }
               />
             </label>
 
             <label className="label">
-              Description
+              {type === "need"
+                ? "What do you need?"
+                : "What are you offering?"}
 
               <textarea
                 className="textarea"
                 value={description}
                 onChange={(event) => setDescription(event.target.value)}
-                placeholder="Describe exactly what you need or can offer..."
+                placeholder={
+                  type === "need"
+                    ? "Describe exactly what you need someone to do..."
+                    : "Describe exactly what you can provide..."
+                }
               />
             </label>
 
             <label className="label">
-              What can you offer or what would you like in return?
+              {exchangeLabel}
 
               <textarea
                 className="textarea"
                 value={exchange}
                 onChange={(event) => setExchange(event.target.value)}
-                placeholder="e.g. Two dozen fresh eggs, firewood, garden help, transport or another useful favour."
+                placeholder={exchangePlaceholder}
               />
             </label>
 
-            <div
-              className="grid"
-              style={{
-                gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-              }}
-            >
-              <label className="label">
-                Category
+            <label className="label">
+              Category
 
-                <select
-                  className="select"
-                  value={category}
-                  onChange={(event) => setCategory(event.target.value)}
-                >
-                  <option>Pickups & Errands</option>
-                  <option>Transport</option>
-                  <option>Home & Garden</option>
-                  <option>Trades & Farm</option>
-                  <option>Mechanical</option>
-                  <option>Farm & Produce</option>
-                  <option>Pet Help</option>
-                  <option>Digital</option>
-                  <option>Other</option>
-                </select>
-              </label>
+              <select
+                className="select"
+                value={category}
+                onChange={(event) => setCategory(event.target.value)}
+              >
+                <option>Pickups & Errands</option>
+                <option>Transport</option>
+                <option>Home & Garden</option>
+                <option>Trades & Farm</option>
+                <option>Mechanical</option>
+                <option>Farm & Produce</option>
+                <option>Pet Help</option>
+                <option>Digital</option>
+                <option>Other</option>
+              </select>
+            </label>
 
+            {usesRoute ? (
+              <div
+                className="grid"
+                style={{
+                  gridTemplateColumns:
+                    "repeat(auto-fit, minmax(180px, 1fr))",
+                }}
+              >
+                <label className="label">
+                  From / pickup location
+
+                  <input
+                    className="input"
+                    value={fromLocation}
+                    onChange={(event) =>
+                      setFromLocation(event.target.value)
+                    }
+                    placeholder="e.g. JTP Machinery, Pambula"
+                  />
+                </label>
+
+                <label className="label">
+                  To / destination
+
+                  <input
+                    className="input"
+                    value={toLocation}
+                    onChange={(event) =>
+                      setToLocation(event.target.value)
+                    }
+                    placeholder="e.g. Cooma"
+                  />
+                </label>
+              </div>
+            ) : (
               <label className="label">
                 Town / location
 
@@ -155,27 +244,27 @@ export default function PostPage() {
                   className="input"
                   value={location}
                   onChange={(event) => setLocation(event.target.value)}
-                  placeholder="e.g. Cooma"
+                  placeholder="e.g. Bombala"
                 />
               </label>
+            )}
 
-              <label className="label">
-                Approx. distance
+            <label className="label">
+              Approx. distance
 
-                <select
-                  className="select"
-                  value={distance}
-                  onChange={(event) => setDistance(event.target.value)}
-                >
-                  <option value="5">5 km</option>
-                  <option value="10">10 km</option>
-                  <option value="25">25 km</option>
-                  <option value="50">50 km</option>
-                  <option value="100">100 km</option>
-                  <option value="150">150 km</option>
-                </select>
-              </label>
-            </div>
+              <select
+                className="select"
+                value={distance}
+                onChange={(event) => setDistance(event.target.value)}
+              >
+                <option value="5">5 km</option>
+                <option value="10">10 km</option>
+                <option value="25">25 km</option>
+                <option value="50">50 km</option>
+                <option value="100">100 km</option>
+                <option value="150">150 km</option>
+              </select>
+            </label>
 
             <button type="submit" className="btn">
               Publish listing
