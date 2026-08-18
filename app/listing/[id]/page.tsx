@@ -1,33 +1,159 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { listings } from "@/lib/data";
 
-export default async function ListingPage({ params }: { params: Promise<{ id: string }> }) {
+const listings = {
+  "carpentry-cooma": {
+    title: "Carpentry & small repairs",
+    person: "Ryley",
+    town: "Cooma",
+    category: "Trades",
+    offers: "Shelves, doors, timber repairs and small carpentry jobs",
+    wants: "Mechanical work, landscaping or photography",
+    description:
+      "Available for small carpentry jobs around Cooma. Happy to discuss the scope before agreeing to a barter.",
+  },
+  "gardening-jindabyne": {
+    title: "Gardening & yard help",
+    person: "Sarah",
+    town: "Jindabyne",
+    category: "Home & Garden",
+    offers: "Garden cleanups, mowing and basic yard maintenance",
+    wants: "Website help, bookkeeping or moving assistance",
+    description:
+      "Can help with general garden maintenance, cleanups and mowing in and around Jindabyne.",
+  },
+  "tech-berridale": {
+    title: "Computer & website help",
+    person: "James",
+    town: "Berridale",
+    category: "Tech",
+    offers: "Basic websites, computer setup and troubleshooting",
+    wants: "Painting, gardening or handyman help",
+    description:
+      "Available for simple website work, computer setup and general troubleshooting.",
+  },
+};
+
+export default async function ListingPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
-  const item = listings.find((x) => x.id === id);
-  if (!item) notFound();
+  const listing = listings[id as keyof typeof listings];
+
+  if (!listing) {
+    return (
+      <main className="container" style={{ padding: "3rem 0" }}>
+        <div className="card">
+          <h1>Listing not found</h1>
+          <p>That listing may have been removed or completed.</p>
+          <Link className="btn" href="/browse">
+            Back to marketplace
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
   return (
-    <main className="container page">
-      <div className="page-grid">
-        <section className="stack">
-          <div className="card">
-            <span className={`badge ${item.type}`}>{item.type === "need" ? "NEEDS HELP" : "OFFERING"}</span>
-            <h1 style={{fontSize:"clamp(2.2rem,5vw,4rem)", marginTop:18}}>{item.title}</h1>
-            <div className="meta">{item.category} · {item.location}</div>
-            <p style={{fontSize:"1.08rem"}}>{item.description}</p>
-          </div>
-          <div className="card"><h2>What they&apos;re proposing</h2><p>{item.exchange}</p><div className="notice">Everything is negotiable. The final exchange is only locked once both people accept the Barter Agreement.</div></div>
-          <div className="card"><h2>Tags</h2><div className="filterbar">{item.tags.map(t => <span className="pill" key={t}>{t}</span>)}</div></div>
-        </section>
-        <aside className="stack">
-          <div className="card">
-            <div className="profile-head"><div className="avatar">{item.user.split(" ").map(x=>x[0]).join("")}</div><div><h3>{item.user}</h3><div className="meta">★ {item.rating} · Verified member</div></div></div>
-            <p>Member profile with trade history, reviews and preferred exchange categories.</p>
-            <Link className="btn" href="/messages" style={{width:"100%"}}>Message about this</Link>
-          </div>
-          <div className="card"><h3>Ready to agree?</h3><p>Once you&apos;ve negotiated the details, turn the conversation into a written barter agreement.</p><Link className="btn secondary" href="/agreement" style={{width:"100%"}}>Open agreement builder</Link></div>
-        </aside>
-      </div>
+    <main className="container" style={{ padding: "2rem 0 4rem" }}>
+      <section
+        style={{
+          background: "#fff",
+          border: "1px solid #ded8cd",
+          borderRadius: 22,
+          padding: "1.5rem",
+        }}
+      >
+        <p
+          style={{
+            color: "#315c44",
+            fontWeight: 800,
+            marginBottom: "0.4rem",
+          }}
+        >
+          {listing.category} · {listing.town}
+        </p>
+
+        <h1
+          style={{
+            fontSize: "clamp(2.2rem, 8vw, 4rem)",
+            marginBottom: "0.5rem",
+          }}
+        >
+          {listing.title}
+        </h1>
+
+        <p
+          style={{
+            color: "#6b6f69",
+            fontSize: "1.1rem",
+            marginBottom: "1.5rem",
+          }}
+        >
+          Offered by {listing.person}
+        </p>
+
+        <div
+          style={{
+            background: "#f8f6f1",
+            borderRadius: 16,
+            padding: "1rem",
+            marginBottom: "1rem",
+          }}
+        >
+          <p style={{ marginBottom: "0.6rem" }}>
+            <strong>What they offer:</strong> {listing.offers}
+          </p>
+
+          <p style={{ margin: 0 }}>
+            <strong>What they want:</strong> {listing.wants}
+          </p>
+        </div>
+
+        <p style={{ lineHeight: 1.6, marginBottom: "1.5rem" }}>
+          {listing.description}
+        </p>
+
+        <div
+          style={{
+            display: "grid",
+            gap: "0.8rem",
+          }}
+        >
+          <Link
+            href={`/messages?listing=${id}`}
+            style={{
+              display: "block",
+              textAlign: "center",
+              background: "#315c44",
+              color: "#fff",
+              padding: "1rem",
+              borderRadius: 12,
+              textDecoration: "none",
+              fontWeight: 800,
+            }}
+          >
+            Propose a barter
+          </Link>
+
+          <Link
+            href="/browse"
+            style={{
+              display: "block",
+              textAlign: "center",
+              background: "#f4efe3",
+              color: "#315c44",
+              padding: "1rem",
+              borderRadius: 12,
+              textDecoration: "none",
+              fontWeight: 800,
+            }}
+          >
+            Back to browse
+          </Link>
+        </div>
+      </section>
     </main>
   );
 }
