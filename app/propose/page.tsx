@@ -11,7 +11,6 @@ type Listing = {
   title: string;
   person: string;
   town: string;
-  category?: string;
   offers: string;
   wants: string;
   from?: string;
@@ -28,7 +27,7 @@ const demoListings: Listing[] = [
     town: "Cooma",
     offers:
       "Can collect a prepaid hardware order from Mitre 10 Pambula and bring it toward Cooma.",
-    wants: "Firewood, fresh produce, or another useful local favour.",
+    wants: "Fresh produce, firewood or another useful local favour.",
     from: "Mitre 10, Pambula",
     to: "Cooma",
   },
@@ -39,20 +38,20 @@ const demoListings: Listing[] = [
     person: "Dan",
     town: "Cooma",
     offers:
-      "Heading from the coast toward Cooma and can collect a prepaid Click & Collect order.",
-    wants: "Fresh eggs, mechanical help, trailer use, or another useful favour.",
+      "Can collect a prepaid Click & Collect order while travelling inland.",
+    wants: "Fresh eggs, mechanical help or another useful favour.",
     from: "Merimbula",
     to: "Cooma",
   },
   {
-    id: "firewood-cooma",
+    id: "mechanical-cooma",
     type: "offer",
-    title: "Firewood delivery around Cooma",
-    person: "Steve",
+    title: "Small engine & mechanical help",
+    person: "Riley",
     town: "Cooma",
     offers:
-      "Can deliver a ute load of firewood around Cooma and nearby areas.",
-    wants: "Small carpentry work, welding help, or mower servicing.",
+      "Can help with mower, small engine and basic mechanical jobs.",
+    wants: "Carpentry, transport help or another useful local trade.",
   },
 ];
 
@@ -63,11 +62,11 @@ function ProposeContent() {
   const [savedListings, setSavedListings] = useState<Listing[]>([]);
   const [loaded, setLoaded] = useState(false);
 
-  const [whatYouProvide, setWhatYouProvide] = useState("");
-  const [whatYouReceive, setWhatYouReceive] = useState("");
+  const [youProvide, setYouProvide] = useState("");
+  const [youReceive, setYouReceive] = useState("");
   const [when, setWhen] = useState("");
   const [notes, setNotes] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+  const [sent, setSent] = useState(false);
 
   useEffect(() => {
     try {
@@ -97,55 +96,67 @@ function ProposeContent() {
     if (!listing) return;
 
     if (listing.type === "need") {
-      // Listing owner needs work and is offering something in exchange.
-      setWhatYouProvide(listing.wants || "");
-      setWhatYouReceive(listing.offers || "");
+      setYouProvide(listing.wants || "");
+      setYouReceive(listing.offers || "");
     } else {
-      // Listing owner is offering something and wants something back.
-      setWhatYouProvide("");
-      setWhatYouReceive(listing.offers || "");
+      setYouReceive(listing.offers || "");
     }
   }, [listing]);
 
-  function saveProposal() {
-    if (!listing || !whatYouProvide.trim()) return;
+  function sendOffer() {
+    if (!listing || !youProvide.trim()) return;
 
-    const proposal = {
+    const otherPerson =
+      listing.person === "You" ? "Listing owner" : listing.person;
+
+    const offer = {
+      id: `barter-${Date.now()}`,
       listingId: listing.id,
-      listingTitle: listing.title,
-      listingTown: listing.town,
-
-      otherPerson:
-        listing.person === "You" ? "Listing owner" : listing.person,
-
-      // Party B / responder provides this:
-      yourOffer: whatYouProvide.trim(),
-
-      // Party A / listing owner provides this:
-      theirWork: whatYouReceive.trim(),
-
+      title: listing.title,
+      with: otherPerson,
+      town: listing.town,
+      status: "Pending",
       when: when.trim(),
-      notes: notes.trim(),
-
-      from: listing.from || "",
-      to: listing.to || "",
-      route: listing.route || "",
-
+      where:
+        listing.from && listing.to
+          ? `${listing.from} → ${listing.to}`
+          : listing.town,
+      youProvide: youProvide.trim(),
+      theyProvide: youReceive.trim(),
+      conditions: notes.trim(),
       createdAt: new Date().toISOString(),
     };
 
+    try {
+      const existing = JSON.parse(
+        localStorage.getItem("localloop-barters") || "[]"
+      );
+
+      const current = Array.isArray(existing) ? existing : [];
+
+      localStorage.setItem(
+        "localloop-barters",
+        JSON.stringify([offer, ...current])
+      );
+    } catch {
+      localStorage.setItem(
+        "localloop-barters",
+        JSON.stringify([offer])
+      );
+    }
+
     localStorage.setItem(
-      "localloop-current-proposal",
-      JSON.stringify(proposal)
+      "localloop-current-offer",
+      JSON.stringify(offer)
     );
 
-    setSubmitted(true);
+    setSent(true);
   }
 
   if (!loaded) {
     return (
       <main className="container" style={{ padding: "2rem 0" }}>
-        Loading proposal...
+        Loading offer...
       </main>
     );
   }
@@ -155,7 +166,6 @@ function ProposeContent() {
       <main className="container" style={{ padding: "3rem 0" }}>
         <div className="card">
           <h1>Listing not found</h1>
-          <p>We couldn’t find the listing for this proposal.</p>
 
           <Link className="btn" href="/browse">
             Back to browse
@@ -164,9 +174,6 @@ function ProposeContent() {
       </main>
     );
   }
-
-  const ownerName =
-    listing.person === "You" ? "the listing owner" : listing.person;
 
   const subject =
     listing.person === "You" ? "They" : listing.person;
@@ -183,12 +190,12 @@ function ProposeContent() {
       >
         <p
           style={{
-            fontWeight: 800,
             color: "#315c44",
+            fontWeight: 800,
             marginBottom: "0.4rem",
           }}
         >
-          PROPOSE A BARTER
+          MAKE AN OFFER
         </p>
 
         <h1
@@ -197,11 +204,11 @@ function ProposeContent() {
             marginBottom: "0.7rem",
           }}
         >
-          Make an offer to {ownerName}
+          {listing.title}
         </h1>
 
         <p style={{ marginBottom: 0 }}>
-          {listing.title} · {listing.town}
+          {listing.town}
         </p>
       </section>
 
@@ -215,7 +222,7 @@ function ProposeContent() {
             </p>
 
             <p>
-              <strong>{subject} is offering in exchange:</strong>
+              <strong>{subject} offers in exchange:</strong>
               <br />
               {listing.offers}
             </p>
@@ -229,161 +236,175 @@ function ProposeContent() {
             </p>
 
             <p>
-              <strong>{subject} would like in exchange:</strong>
+              <strong>{subject} would like:</strong>
               <br />
               {listing.wants}
             </p>
           </>
         )}
 
-        {(listing.from || listing.to) && (
+        {listing.from && listing.to && (
           <div
             style={{
-              marginTop: "1rem",
               background: "#eef4ef",
               padding: "0.9rem",
               borderRadius: 12,
+              marginTop: "1rem",
             }}
           >
-            <strong>Route:</strong>
+            <strong>Route</strong>
             <br />
-            {listing.from || "Pickup"} → {listing.to || listing.town}
+            {listing.from} → {listing.to}
           </div>
         )}
       </section>
 
-      <section className="card" style={{ display: "grid", gap: "1rem" }}>
-        <label>
-          <strong>
-            {isNeed
-              ? "What are you proposing to provide?"
-              : "What can you offer in return?"}
-          </strong>
+      {!sent ? (
+        <section className="card" style={{ display: "grid", gap: "1rem" }}>
+          <label>
+            <strong>You will provide</strong>
 
-          <textarea
-            value={whatYouProvide}
-            onChange={(e) => setWhatYouProvide(e.target.value)}
-            placeholder={
-              isNeed
-                ? "Example: I can pick up and transport the tractor."
-                : "Example: Two dozen fresh eggs, mechanical help, garden work..."
-            }
-            style={{
-              width: "100%",
-              minHeight: 110,
-              marginTop: 8,
-              padding: "0.9rem",
-              borderRadius: 12,
-              border: "1px solid #ccc",
-            }}
-          />
-        </label>
+            <textarea
+              value={youProvide}
+              onChange={(e) => setYouProvide(e.target.value)}
+              placeholder="What will you do or provide?"
+              style={{
+                width: "100%",
+                minHeight: 100,
+                marginTop: 8,
+                padding: "0.9rem",
+                borderRadius: 12,
+                border: "1px solid #ccc",
+              }}
+            />
+          </label>
 
-        <label>
-          <strong>
-            {isNeed
-              ? "What would you receive in exchange?"
-              : "What are you asking them to provide?"}
-          </strong>
+          <label>
+            <strong>You will receive</strong>
 
-          <textarea
-            value={whatYouReceive}
-            onChange={(e) => setWhatYouReceive(e.target.value)}
-            style={{
-              width: "100%",
-              minHeight: 100,
-              marginTop: 8,
-              padding: "0.9rem",
-              borderRadius: 12,
-              border: "1px solid #ccc",
-            }}
-          />
-        </label>
+            <textarea
+              value={youReceive}
+              onChange={(e) => setYouReceive(e.target.value)}
+              placeholder="What will you receive in exchange?"
+              style={{
+                width: "100%",
+                minHeight: 100,
+                marginTop: 8,
+                padding: "0.9rem",
+                borderRadius: 12,
+                border: "1px solid #ccc",
+              }}
+            />
+          </label>
 
-        <label>
-          <strong>When?</strong>
+          <label>
+            <strong>When?</strong>
+            <span style={{ color: "#777" }}> Optional</span>
 
-          <input
-            value={when}
-            onChange={(e) => setWhen(e.target.value)}
-            placeholder="Example: Saturday morning"
-            style={{
-              width: "100%",
-              marginTop: 8,
-              padding: "0.9rem",
-              borderRadius: 12,
-              border: "1px solid #ccc",
-            }}
-          />
-        </label>
+            <input
+              value={when}
+              onChange={(e) => setWhen(e.target.value)}
+              placeholder="Saturday morning, next week..."
+              style={{
+                width: "100%",
+                marginTop: 8,
+                padding: "0.9rem",
+                borderRadius: 12,
+                border: "1px solid #ccc",
+              }}
+            />
+          </label>
 
-        <label>
-          <strong>Anything else to agree on?</strong>
+          <label>
+            <strong>Anything else?</strong>
+            <span style={{ color: "#777" }}> Optional</span>
 
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Pickup point, loading, fuel, timing, equipment, special conditions..."
-            style={{
-              width: "100%",
-              minHeight: 100,
-              marginTop: 8,
-              padding: "0.9rem",
-              borderRadius: 12,
-              border: "1px solid #ccc",
-            }}
-          />
-        </label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Loading, pickup details, condition, equipment..."
+              style={{
+                width: "100%",
+                minHeight: 90,
+                marginTop: 8,
+                padding: "0.9rem",
+                borderRadius: 12,
+                border: "1px solid #ccc",
+              }}
+            />
+          </label>
 
-        {!submitted ? (
           <button
             className="btn"
-            onClick={saveProposal}
-            disabled={!whatYouProvide.trim()}
+            onClick={sendOffer}
+            disabled={!youProvide.trim()}
           >
-            Send barter proposal
+            Send offer
           </button>
-        ) : (
-          <div
+
+          <p
             style={{
-              background: "#eef4ef",
-              borderRadius: 14,
-              padding: "1rem",
+              fontSize: "0.85rem",
+              textAlign: "center",
+              margin: 0,
             }}
           >
-            <h3>Proposal ready ✓</h3>
+            If the other person accepts, LocalLoop will create a deal summary
+            automatically.
+          </p>
+        </section>
+      ) : (
+        <section
+          style={{
+            background: "#eef4ef",
+            borderRadius: 18,
+            padding: "1.3rem",
+          }}
+        >
+          <h2>Offer sent ✓</h2>
 
+          <div
+            style={{
+              background: "#fff",
+              borderRadius: 14,
+              padding: "1rem",
+              marginBottom: "1rem",
+            }}
+          >
             <p>
-              The exchange now reads correctly from both sides.
+              <strong>You provide:</strong>
+              <br />
+              {youProvide}
             </p>
 
-            <div
+            <p style={{ marginBottom: 0 }}>
+              <strong>You receive:</strong>
+              <br />
+              {youReceive}
+            </p>
+          </div>
+
+          <div style={{ display: "grid", gap: "0.8rem" }}>
+            <Link className="btn" href="/barters">
+              View My Barters
+            </Link>
+
+            <Link
+              href={`/messages?listing=${listing.id}`}
               style={{
-                background: "#fff",
-                borderRadius: 12,
+                textAlign: "center",
+                background: "#f4efe3",
+                color: "#315c44",
                 padding: "0.9rem",
-                marginBottom: "1rem",
+                borderRadius: 12,
+                fontWeight: 800,
               }}
             >
-              <p>
-                <strong>You provide:</strong>
-                <br />
-                {whatYouProvide}
-              </p>
-
-              <p style={{ marginBottom: 0 }}>
-                <strong>{subject} provides:</strong>
-                <br />
-                {whatYouReceive}
-              </p>
-            </div>
-
-            <Link className="btn" href="/agreement">
-              Create barter agreement
+              Message about this offer
             </Link>
           </div>
-        )}
-      </section>
+        </section>
+      )}
     </main>
   );
 }
@@ -393,7 +414,7 @@ export default function ProposePage() {
     <Suspense
       fallback={
         <main className="container" style={{ padding: "2rem 0" }}>
-          Loading proposal...
+          Loading offer...
         </main>
       }
     >
