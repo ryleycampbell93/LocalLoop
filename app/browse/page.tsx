@@ -13,6 +13,9 @@ type Listing = {
   category: string;
   offers: string;
   wants: string;
+  route?: string;
+  from?: string;
+  to?: string;
 };
 
 const demoOffers: Listing[] = [
@@ -20,34 +23,40 @@ const demoOffers: Listing[] = [
     id: "mitre10-pambula-pickup",
     title: "Mitre 10 Pambula pickup",
     person: "Chris",
-    town: "Pambula",
+    town: "Cooma",
     distance: 104,
     category: "Pickups & Errands",
     offers:
       "Can collect a prepaid hardware order from Mitre 10 Pambula and bring it toward Cooma.",
     wants: "Firewood, fresh produce, or another useful local favour.",
+    from: "Mitre 10, Pambula",
+    to: "Cooma",
   },
   {
     id: "merimbula-pharmacy-pickup",
     title: "Merimbula pharmacy pickup",
     person: "Emma",
-    town: "Merimbula",
+    town: "Cooma",
     distance: 108,
     category: "Pickups & Errands",
     offers:
       "Can collect eligible prepaid pharmacy items when already travelling inland.",
     wants: "Garden help, dog minding, or help moving a few items.",
+    from: "Merimbula",
+    to: "Cooma",
   },
   {
     id: "click-and-collect-coast",
     title: "Click & Collect pickup",
     person: "Dan",
-    town: "Merimbula",
+    town: "Cooma",
     distance: 110,
     category: "Pickups & Errands",
     offers:
       "Heading from the coast toward Cooma and can collect a prepaid Click & Collect order.",
     wants: "Fresh eggs, mechanical help, trailer use, or another useful favour.",
+    from: "Merimbula",
+    to: "Cooma",
   },
   {
     id: "firewood-cooma",
@@ -70,6 +79,8 @@ const demoOffers: Listing[] = [
     offers:
       "Can help move a mower, furniture or other suitable items with a trailer.",
     wants: "Garden cleanup, painting help, or computer assistance.",
+    from: "Jindabyne",
+    to: "Cooma",
   },
   {
     id: "fencing-bombala",
@@ -141,8 +152,16 @@ export default function BrowsePage() {
 
   const filteredOffers = useMemo(() => {
     return offers.filter((offer) => {
-      const text =
-        `${offer.title} ${offer.offers} ${offer.wants} ${offer.person} ${offer.town}`.toLowerCase();
+      const text = `
+        ${offer.title}
+        ${offer.offers}
+        ${offer.wants}
+        ${offer.person}
+        ${offer.town}
+        ${offer.from || ""}
+        ${offer.to || ""}
+        ${offer.route || ""}
+      `.toLowerCase();
 
       const matchesSearch = text.includes(search.toLowerCase());
       const matchesTown = town === "All towns" || offer.town === town;
@@ -193,47 +212,35 @@ export default function BrowsePage() {
         <p
           style={{
             color: "#5f625d",
-            fontSize: "1rem",
             marginBottom: "1rem",
             maxWidth: 720,
           }}
         >
-          Find local people offering practical help, transport, skills and
-          useful trades around the region.
+          Find local people offering practical help, transport, skills,
+          produce and useful trades around the region.
         </p>
 
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Try: Pambula pickup, firewood, trailer, mower..."
-          style={{
-            width: "100%",
-            padding: "1rem",
-            borderRadius: 14,
-            border: "1px solid #cfc7b8",
-            fontSize: "1rem",
-            background: "#fff",
-          }}
+          placeholder="Try: Pambula pickup, tractor, firewood, trailer..."
+          className="input"
         />
       </section>
 
       <section
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+          gridTemplateColumns:
+            "repeat(auto-fit, minmax(150px, 1fr))",
           gap: "0.8rem",
           marginBottom: "1.5rem",
         }}
       >
         <select
+          className="select"
           value={town}
           onChange={(e) => setTown(e.target.value)}
-          style={{
-            padding: "0.9rem",
-            borderRadius: 12,
-            border: "1px solid #d6d0c5",
-            background: "#fff",
-          }}
         >
           {towns.map((item) => (
             <option key={item}>{item}</option>
@@ -241,14 +248,9 @@ export default function BrowsePage() {
         </select>
 
         <select
+          className="select"
           value={distance}
           onChange={(e) => setDistance(e.target.value)}
-          style={{
-            padding: "0.9rem",
-            borderRadius: 12,
-            border: "1px solid #d6d0c5",
-            background: "#fff",
-          }}
         >
           <option value="25">Within 25 km</option>
           <option value="50">Within 50 km</option>
@@ -257,14 +259,9 @@ export default function BrowsePage() {
         </select>
 
         <select
+          className="select"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          style={{
-            padding: "0.9rem",
-            borderRadius: 12,
-            border: "1px solid #d6d0c5",
-            background: "#fff",
-          }}
         >
           {categories.map((item) => (
             <option key={item}>{item}</option>
@@ -273,94 +270,148 @@ export default function BrowsePage() {
       </section>
 
       <section style={{ display: "grid", gap: "1rem" }}>
-        {filteredOffers.map((offer) => (
-          <article
-            key={offer.id}
-            style={{
-              background: "#fff",
-              border: "1px solid #ded8cd",
-              borderRadius: 18,
-              padding: "1.2rem",
-              boxShadow: "0 8px 24px rgba(36, 48, 40, 0.05)",
-            }}
-          >
-            <div
+        {filteredOffers.map((offer) => {
+          const hasRoute = Boolean(
+            (offer.from && offer.to) || offer.route
+          );
+
+          return (
+            <article
+              key={offer.id}
               style={{
-                display: "flex",
-                justifyContent: "space-between",
-                gap: "1rem",
-                alignItems: "flex-start",
-                marginBottom: "0.5rem",
+                background: "#fff",
+                border: "1px solid #ded8cd",
+                borderRadius: 18,
+                padding: "1.2rem",
+                boxShadow:
+                  "0 8px 24px rgba(36, 48, 40, 0.05)",
               }}
             >
-              <div>
-                <p
-                  style={{
-                    color: "#315c44",
-                    fontWeight: 800,
-                    marginBottom: "0.2rem",
-                  }}
-                >
-                  {offer.category}
-                </p>
-
-                <h2 style={{ margin: 0 }}>{offer.title}</h2>
-              </div>
-
-              <span
+              <div
                 style={{
-                  background: "#eef4ef",
-                  color: "#315c44",
-                  borderRadius: 999,
-                  padding: "0.4rem 0.7rem",
-                  fontSize: "0.85rem",
-                  whiteSpace: "nowrap",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: "1rem",
+                  alignItems: "flex-start",
                 }}
               >
-                {offer.distance} km
-              </span>
-            </div>
+                <div>
+                  <p
+                    style={{
+                      color: "#315c44",
+                      fontWeight: 800,
+                      marginBottom: "0.25rem",
+                    }}
+                  >
+                    {offer.category}
+                  </p>
 
-            <p style={{ color: "#6b6f69", marginBottom: "0.8rem" }}>
-              {offer.person} · {offer.town}
-            </p>
+                  <h2 style={{ margin: 0 }}>{offer.title}</h2>
+                </div>
 
-            <div
-              style={{
-                background: "#f8f6f1",
-                borderRadius: 14,
-                padding: "0.9rem",
-                marginBottom: "0.8rem",
-              }}
-            >
-              <p style={{ marginBottom: "0.5rem" }}>
-                <strong>Offers:</strong> {offer.offers}
+                <span
+                  style={{
+                    background: "#eef4ef",
+                    color: "#315c44",
+                    borderRadius: 999,
+                    padding: "0.4rem 0.7rem",
+                    fontSize: "0.85rem",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {offer.distance} km
+                </span>
+              </div>
+
+              <p style={{ color: "#6b6f69" }}>
+                {offer.person} · {offer.town}
               </p>
 
-              <p style={{ margin: 0 }}>
-                <strong>Wants:</strong> {offer.wants}
-              </p>
-            </div>
+              {hasRoute && (
+                <div
+                  style={{
+                    background: "#eef4ef",
+                    borderRadius: 14,
+                    padding: "0.9rem",
+                    marginBottom: "0.8rem",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: "0.8rem",
+                      fontWeight: 800,
+                      color: "#315c44",
+                      marginBottom: "0.3rem",
+                    }}
+                  >
+                    ROUTE
+                  </div>
 
-            <Link
-              href={`/listing/${offer.id}`}
-              style={{
-                display: "block",
-                textAlign: "center",
-                background: "#315c44",
-                color: "#fff",
-                padding: "0.9rem 1rem",
-                borderRadius: 12,
-                textDecoration: "none",
-                fontWeight: 800,
-              }}
-            >
-              {offer.id.startsWith("user-")
-                ? "View your listing"
-                : "View offer"}
-            </Link>
-          </article>
-        ))}
+                  <strong>
+                    {offer.from && offer.to
+                      ? `${offer.from} → ${offer.to}`
+                      : offer.route}
+                  </strong>
+                </div>
+              )}
+
+              <div
+                style={{
+                  background: "#f8f6f1",
+                  borderRadius: 14,
+                  padding: "1rem",
+                  marginBottom: "1rem",
+                }}
+              >
+                {offer.type === "need" ? (
+                  <>
+                    <p style={{ marginBottom: "0.7rem" }}>
+                      <strong>Needs:</strong>
+                      <br />
+                      {offer.wants}
+                    </p>
+
+                    <p style={{ margin: 0 }}>
+                      <strong>Offers in exchange:</strong>
+                      <br />
+                      {offer.offers}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p style={{ marginBottom: "0.7rem" }}>
+                      <strong>Offers:</strong>
+                      <br />
+                      {offer.offers}
+                    </p>
+
+                    <p style={{ margin: 0 }}>
+                      <strong>Would like in exchange:</strong>
+                      <br />
+                      {offer.wants}
+                    </p>
+                  </>
+                )}
+              </div>
+
+              <Link
+                href={`/listing/${offer.id}`}
+                style={{
+                  display: "block",
+                  textAlign: "center",
+                  background: "#315c44",
+                  color: "#fff",
+                  padding: "0.9rem 1rem",
+                  borderRadius: 12,
+                  textDecoration: "none",
+                  fontWeight: 800,
+                }}
+              >
+                View listing
+              </Link>
+            </article>
+          );
+        })}
 
         {filteredOffers.length === 0 && (
           <div
