@@ -34,6 +34,7 @@ function MessagesContent() {
   }, [listingId]);
 
   const [message, setMessage] = useState("");
+
   const [messages, setMessages] = useState([
     {
       from: listing.person,
@@ -93,7 +94,7 @@ function MessagesContent() {
 
       <section
         style={{
-          background: "#fff",
+          background: "#ffffff",
           border: "1px solid #ded8cd",
           borderRadius: 20,
           padding: "1rem",
@@ -117,7 +118,7 @@ function MessagesContent() {
                 style={{
                   maxWidth: "85%",
                   background: isYou ? "#315c44" : "#f4efe3",
-                  color: isYou ? "#fff" : "#222",
+                  color: isYou ? "#ffffff" : "#626b64",
                   borderRadius: 16,
                   padding: "0.9rem 1rem",
                 }}
@@ -125,13 +126,22 @@ function MessagesContent() {
                 <p
                   style={{
                     fontWeight: 800,
+                    marginTop: 0,
                     marginBottom: "0.3rem",
+                    color: isYou ? "#ffffff" : "#626b64",
                   }}
                 >
                   {item.from}
                 </p>
 
-                <p style={{ margin: 0 }}>{item.text}</p>
+                <p
+                  style={{
+                    margin: 0,
+                    color: isYou ? "#ffffff" : "#626b64",
+                  }}
+                >
+                  {item.text}
+                </p>
               </div>
             </div>
           );
@@ -140,7 +150,7 @@ function MessagesContent() {
 
       <section
         style={{
-          background: "#fff",
+          background: "#ffffff",
           border: "1px solid #ded8cd",
           borderRadius: 20,
           padding: "1rem",
@@ -158,6 +168,7 @@ function MessagesContent() {
             border: "1px solid #ccc",
             fontSize: "1rem",
             marginBottom: "0.8rem",
+            boxSizing: "border-box",
           }}
         />
 
@@ -167,8 +178,8 @@ function MessagesContent() {
           style={{
             width: "100%",
             border: 0,
-            background: message.trim() ? "#315c44" : "#9da9a1",
-            color: "#fff",
+            background: message.trim() ? "#315c44" : "#a9b2ac",
+            color: "#ffffff",
             padding: "1rem",
             borderRadius: 12,
             fontWeight: 800,
