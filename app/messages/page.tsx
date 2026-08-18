@@ -1,61 +1,174 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
-const listings = {
-  "carpentry-cooma": {
-    title: "Carpentry & small repairs",
-    person: "Riley",
+type Listing = {
+  id: string;
+  title: string;
+  person: string;
+  town: string;
+};
+
+type ChatMessage = {
+  from: "You" | "Them";
+  text: string;
+};
+
+const demoListings: Listing[] = [
+  {
+    id: "mitre10-pambula-pickup",
+    title: "Mitre 10 Pambula pickup",
+    person: "Chris",
     town: "Cooma",
   },
-  "gardening-jindabyne": {
-    title: "Gardening & yard help",
+  {
+    id: "merimbula-pharmacy-pickup",
+    title: "Merimbula pharmacy pickup",
+    person: "Emma",
+    town: "Cooma",
+  },
+  {
+    id: "click-and-collect-coast",
+    title: "Click & Collect pickup",
+    person: "Dan",
+    town: "Cooma",
+  },
+  {
+    id: "firewood-cooma",
+    title: "Firewood delivery around Cooma",
+    person: "Steve",
+    town: "Cooma",
+  },
+  {
+    id: "trailer-transport-jindabyne",
+    title: "Trailer transport help",
     person: "Sarah",
     town: "Jindabyne",
   },
-  "tech-berridale": {
-    title: "Computer & website help",
-    person: "James",
-    town: "Berridale",
+  {
+    id: "fencing-bombala",
+    title: "Need a hand with fencing",
+    person: "Tom",
+    town: "Bombala",
   },
-};
+  {
+    id: "mechanical-cooma",
+    title: "Small engine & mechanical help",
+    person: "Riley",
+    town: "Cooma",
+  },
+];
 
 function MessagesContent() {
   const searchParams = useSearchParams();
-  const listingId = searchParams.get("listing") || "carpentry-cooma";
+  const listingId = searchParams.get("listing") || "";
 
-  const listing = useMemo(() => {
-    return (
-      listings[listingId as keyof typeof listings] ||
-      listings["carpentry-cooma"]
-    );
-  }, [listingId]);
+  const [savedListings, setSavedListings] = useState<Listing[]>([]);
+  const [loaded, setLoaded] = useState(false);
 
   const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
 
-  const [messages, setMessages] = useState([
-    {
-      from: listing.person,
-      text: `Hey, happy to chat about the ${listing.title.toLowerCase()} barter.`,
-    },
-  ]);
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(
+        localStorage.getItem("localloop-listings") || "[]"
+      );
+
+      if (Array.isArray(stored)) {
+        setSavedListings(stored);
+      }
+    } catch {
+      setSavedListings([]);
+    }
+
+    setLoaded(true);
+  }, []);
+
+  const listing = useMemo(() => {
+    return [...savedListings, ...demoListings].find(
+      (item) => item.id === listingId
+    );
+  }, [savedListings, listingId]);
+
+  const otherPerson =
+    listing?.person === "You"
+      ? "Other person"
+      : listing?.person || "LocalLoop member";
+
+  useEffect(() => {
+    if (!listingId) return;
+
+    try {
+      const stored = JSON.parse(
+        localStorage.getItem(`localloop-messages-${listingId}`) || "[]"
+      );
+
+      if (Array.isArray(stored) && stored.length > 0) {
+        setMessages(stored);
+      } else {
+        setMessages([
+          {
+            from: "Them",
+            text: `Hi, happy to chat about "${listing?.title || "this barter"}".`,
+          },
+        ]);
+      }
+    } catch {
+      setMessages([]);
+    }
+  }, [listingId, listing?.title]);
 
   function sendMessage() {
     const text = message.trim();
 
-    if (!text) return;
+    if (!text || !listingId) return;
 
-    setMessages((current) => [
-      ...current,
+    const updated: ChatMessage[] = [
+      ...messages,
       {
         from: "You",
         text,
       },
-    ]);
+    ];
+
+    setMessages(updated);
+
+    localStorage.setItem(
+      `localloop-messages-${listingId}`,
+      JSON.stringify(updated)
+    );
 
     setMessage("");
+  }
+
+  if (!loaded) {
+    return (
+      <main className="container" style={{ padding: "2rem 0" }}>
+        Loading messages...
+      </main>
+    );
+  }
+
+  if (!listing) {
+    return (
+      <main className="container" style={{ padding: "3rem 0" }}>
+        <div className="card">
+          <h1>Conversation not found</h1>
+
+          <p>
+            Open a listing or barter first, then start the conversation from
+            there.
+          </p>
+
+          <Link className="btn" href="/browse">
+            Back to browse
+          </Link>
+        </div>
+      </main>
+    );
   }
 
   return (
@@ -84,7 +197,7 @@ function MessagesContent() {
             marginBottom: "0.6rem",
           }}
         >
-          Chat with {listing.person}
+          Chat with {otherPerson}
         </h1>
 
         <p style={{ color: "#666", marginBottom: 0 }}>
@@ -108,7 +221,7 @@ function MessagesContent() {
 
           return (
             <div
-              key={`${item.from}-${index}`}
+              key={index}
               style={{
                 display: "flex",
                 justifyContent: isYou ? "flex-end" : "flex-start",
@@ -131,7 +244,7 @@ function MessagesContent() {
                     color: isYou ? "#ffffff" : "#626b64",
                   }}
                 >
-                  {item.from}
+                  {isYou ? "You" : otherPerson}
                 </p>
 
                 <p
@@ -159,7 +272,7 @@ function MessagesContent() {
         <textarea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder={`Message ${listing.person}...`}
+          placeholder={`Message ${otherPerson}...`}
           style={{
             width: "100%",
             minHeight: 110,
