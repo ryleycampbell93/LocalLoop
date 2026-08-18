@@ -4,9 +4,9 @@ export default function Header() {
   return (
     <header className="header">
       <div className="container nav">
-        <Link className="brand" href="/">
+        <div className="brand">
           Local<span>Loop</span>
-        </Link>
+        </div>
 
         <nav className="navlinks">
           <Link href="/">Home</Link>
