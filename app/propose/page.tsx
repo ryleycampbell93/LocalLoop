@@ -1,19 +1,25 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function ProposePage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
-  const listingId = searchParams.get("listing") || "";
-  const listingTitle = searchParams.get("title") || "this listing";
+  const [listingId, setListingId] = useState("");
+  const [listingTitle, setListingTitle] = useState("this listing");
 
   const [offerType, setOfferType] = useState("");
   const [offerText, setOfferText] = useState("");
   const [message, setMessage] = useState("");
   const [sent, setSent] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+
+    setListingId(params.get("listing") || "");
+    setListingTitle(params.get("title") || "this listing");
+  }, []);
 
   const offerTypes = [
     { id: "item", label: "Item", icon: "📦" },
@@ -56,19 +62,18 @@ export default function ProposePage() {
       <main
         style={{
           minHeight: "100vh",
-          background: "#f4f4f4",
+          background: "#f7f6f1",
           padding: "24px 18px",
-          fontFamily: "Arial, sans-serif",
         }}
       >
         <div
           style={{
             maxWidth: 520,
-            margin: "60px auto",
+            margin: "50px auto",
             background: "#fff",
-            borderRadius: 20,
+            borderRadius: 22,
             padding: 28,
-            boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+            border: "1px solid #dedbd3",
           }}
         >
           <div
@@ -76,7 +81,8 @@ export default function ProposePage() {
               width: 60,
               height: 60,
               borderRadius: "50%",
-              background: "#e8f5e9",
+              background: "#e8f3ec",
+              color: "#214d3d",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -87,19 +93,18 @@ export default function ProposePage() {
             ✓
           </div>
 
-          <h1 style={{ margin: "0 0 10px", fontSize: 28 }}>
+          <h1 style={{ margin: "0 0 10px", fontSize: 30 }}>
             Offer sent
           </h1>
 
           <p
             style={{
-              margin: "0 0 24px",
               color: "#666",
               lineHeight: 1.5,
+              marginBottom: 24,
             }}
           >
             Your offer for <strong>{listingTitle}</strong> has been sent.
-            The other person can accept, counter or decline.
           </p>
 
           <button
@@ -107,13 +112,12 @@ export default function ProposePage() {
             style={{
               width: "100%",
               border: 0,
-              borderRadius: 12,
-              padding: "15px 18px",
-              background: "#d62f2f",
+              borderRadius: 14,
+              padding: 16,
+              background: "#214d3d",
               color: "#fff",
-              fontWeight: 700,
-              fontSize: 16,
-              cursor: "pointer",
+              fontSize: 17,
+              fontWeight: 800,
             }}
           >
             Go to messages
@@ -123,15 +127,14 @@ export default function ProposePage() {
             onClick={() => router.back()}
             style={{
               width: "100%",
-              border: "1px solid #ddd",
-              borderRadius: 12,
-              padding: "14px 18px",
-              background: "#fff",
-              color: "#333",
-              fontWeight: 600,
-              fontSize: 15,
+              border: 0,
+              borderRadius: 14,
+              padding: 16,
+              background: "#f1eee6",
+              color: "#214d3d",
+              fontSize: 17,
+              fontWeight: 800,
               marginTop: 10,
-              cursor: "pointer",
             }}
           >
             Back to listing
@@ -145,19 +148,18 @@ export default function ProposePage() {
     <main
       style={{
         minHeight: "100vh",
-        background: "#f4f4f4",
-        padding: "24px 18px",
-        fontFamily: "Arial, sans-serif",
+        background: "#f7f6f1",
+        padding: "24px 18px 60px",
       }}
     >
       <div
         style={{
           maxWidth: 540,
-          margin: "24px auto",
+          margin: "20px auto",
           background: "#fff",
-          borderRadius: 20,
+          borderRadius: 22,
           padding: 24,
-          boxShadow: "0 8px 24px rgba(0,0,0,0.07)",
+          border: "1px solid #dedbd3",
         }}
       >
         <button
@@ -165,10 +167,11 @@ export default function ProposePage() {
           style={{
             border: 0,
             background: "transparent",
-            fontSize: 15,
             padding: 0,
-            marginBottom: 18,
-            cursor: "pointer",
+            marginBottom: 20,
+            fontSize: 16,
+            fontWeight: 700,
+            color: "#214d3d",
           }}
         >
           ← Back
@@ -176,8 +179,8 @@ export default function ProposePage() {
 
         <h1
           style={{
-            margin: "0 0 6px",
-            fontSize: 28,
+            margin: "0 0 8px",
+            fontSize: 32,
           }}
         >
           Make an offer
@@ -185,9 +188,9 @@ export default function ProposePage() {
 
         <p
           style={{
-            margin: "0 0 24px",
+            margin: "0 0 26px",
             color: "#666",
-            lineHeight: 1.45,
+            lineHeight: 1.5,
           }}
         >
           What would you offer for <strong>{listingTitle}</strong>?
@@ -197,7 +200,7 @@ export default function ProposePage() {
           <label
             style={{
               display: "block",
-              fontWeight: 700,
+              fontWeight: 800,
               marginBottom: 10,
             }}
           >
@@ -207,9 +210,9 @@ export default function ProposePage() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(2, 1fr)",
+              gridTemplateColumns: "1fr 1fr",
               gap: 10,
-              marginBottom: 22,
+              marginBottom: 24,
             }}
           >
             {offerTypes.map((type) => {
@@ -221,26 +224,20 @@ export default function ProposePage() {
                   type="button"
                   onClick={() => setOfferType(type.id)}
                   style={{
-                    padding: "16px 10px",
+                    textAlign: "left",
+                    padding: 16,
                     borderRadius: 14,
                     border: selected
-                      ? "2px solid #d62f2f"
+                      ? "2px solid #214d3d"
                       : "1px solid #ddd",
-                    background: selected ? "#fff3f3" : "#fff",
-                    cursor: "pointer",
-                    textAlign: "left",
+                    background: selected ? "#edf3ef" : "#fff",
                   }}
                 >
                   <div style={{ fontSize: 24, marginBottom: 6 }}>
                     {type.icon}
                   </div>
 
-                  <div
-                    style={{
-                      fontWeight: 700,
-                      fontSize: 15,
-                    }}
-                  >
+                  <div style={{ fontWeight: 800 }}>
                     {type.label}
                   </div>
                 </button>
@@ -251,7 +248,7 @@ export default function ProposePage() {
           <label
             style={{
               display: "block",
-              fontWeight: 700,
+              fontWeight: 800,
               marginBottom: 8,
             }}
           >
@@ -267,10 +264,9 @@ export default function ProposePage() {
               width: "100%",
               boxSizing: "border-box",
               border: "1px solid #ccc",
-              borderRadius: 12,
+              borderRadius: 14,
               padding: 14,
               fontSize: 16,
-              resize: "vertical",
               marginBottom: 20,
             }}
           />
@@ -278,18 +274,12 @@ export default function ProposePage() {
           <label
             style={{
               display: "block",
-              fontWeight: 700,
+              fontWeight: 800,
               marginBottom: 8,
             }}
           >
-            Message
-            <span
-              style={{
-                fontWeight: 400,
-                color: "#888",
-                marginLeft: 5,
-              }}
-            >
+            Message{" "}
+            <span style={{ color: "#888", fontWeight: 400 }}>
               optional
             </span>
           </label>
@@ -303,11 +293,10 @@ export default function ProposePage() {
               width: "100%",
               boxSizing: "border-box",
               border: "1px solid #ccc",
-              borderRadius: 12,
+              borderRadius: 14,
               padding: 14,
               fontSize: 16,
-              resize: "vertical",
-              marginBottom: 22,
+              marginBottom: 24,
             }}
           />
 
@@ -317,30 +306,28 @@ export default function ProposePage() {
             style={{
               width: "100%",
               border: 0,
-              borderRadius: 13,
-              padding: "16px 18px",
+              borderRadius: 14,
+              padding: 17,
               background:
-                offerType && offerText.trim() ? "#d62f2f" : "#bbb",
+                offerType && offerText.trim() ? "#214d3d" : "#aaa",
               color: "#fff",
               fontSize: 17,
               fontWeight: 800,
-              cursor:
-                offerType && offerText.trim() ? "pointer" : "default",
             }}
           >
-            Send Offer
+            Send offer
           </button>
 
           <p
             style={{
               textAlign: "center",
-              fontSize: 13,
               color: "#888",
+              fontSize: 13,
               lineHeight: 1.45,
-              margin: "14px 4px 0",
+              marginTop: 14,
             }}
           >
-            Once sent, you can continue discussing the deal privately in chat.
+            Any other deal details can be worked out privately in chat.
           </p>
         </form>
       </div>
