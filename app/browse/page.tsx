@@ -20,7 +20,7 @@ type Listing = {
   demo?: boolean;
 };
 
-const demoOffers: Listing[] = [
+const demoListings: Listing[] = [
   {
     id: "mitre10-pambula-pickup",
     type: "offer",
@@ -37,7 +37,6 @@ const demoOffers: Listing[] = [
     to: "Cooma",
     demo: true,
   },
-
   {
     id: "merimbula-pharmacy-pickup",
     type: "offer",
@@ -54,7 +53,6 @@ const demoOffers: Listing[] = [
     to: "Cooma",
     demo: true,
   },
-
   {
     id: "click-and-collect-coast",
     type: "offer",
@@ -69,12 +67,9 @@ const demoOffers: Listing[] = [
       "Fresh eggs, mechanical help, trailer use, or another useful favour.",
     from: "Merimbula",
     to: "Cooma",
-    photos: [
-      "/0051362F-9E69-4362-AF78-586CC1593CF6.png",
-    ],
+    photos: ["/0051362F-9E69-4362-AF78-586CC1593CF6.png"],
     demo: true,
   },
-
   {
     id: "firewood-cooma",
     type: "offer",
@@ -90,7 +85,6 @@ const demoOffers: Listing[] = [
     photos: ["/firewood-delivery.png.jpg"],
     demo: true,
   },
-
   {
     id: "trailer-transport-jindabyne",
     type: "offer",
@@ -107,7 +101,6 @@ const demoOffers: Listing[] = [
     to: "Cooma",
     demo: true,
   },
-
   {
     id: "fencing-bombala",
     type: "need",
@@ -122,7 +115,6 @@ const demoOffers: Listing[] = [
       "Someone experienced to help repair and tension a section of fencing.",
     demo: true,
   },
-
   {
     id: "mechanical-cooma",
     type: "offer",
@@ -160,48 +152,54 @@ export default function BrowsePage() {
     }
   }, []);
 
-  const offers = useMemo(
-    () => [...savedListings, ...demoOffers],
+  const listings = useMemo(
+    () => [...savedListings, ...demoListings],
     [savedListings]
   );
 
   const towns = useMemo(
     () => [
       "All towns",
-      ...Array.from(new Set(offers.map((offer) => offer.town))),
+      ...Array.from(new Set(listings.map((listing) => listing.town))),
     ],
-    [offers]
+    [listings]
   );
 
   const categories = useMemo(
     () => [
       "All categories",
-      ...Array.from(new Set(offers.map((offer) => offer.category))),
+      ...Array.from(
+        new Set(listings.map((listing) => listing.category))
+      ),
     ],
-    [offers]
+    [listings]
   );
 
-  const filteredOffers = useMemo(() => {
-    return offers.filter((offer) => {
+  const filteredListings = useMemo(() => {
+    return listings.filter((listing) => {
       const text = `
-        ${offer.title}
-        ${offer.offers}
-        ${offer.wants}
-        ${offer.person}
-        ${offer.town}
-        ${offer.from || ""}
-        ${offer.to || ""}
-        ${offer.route || ""}
+        ${listing.title}
+        ${listing.offers}
+        ${listing.wants}
+        ${listing.person}
+        ${listing.town}
+        ${listing.category}
+        ${listing.from || ""}
+        ${listing.to || ""}
+        ${listing.route || ""}
       `.toLowerCase();
 
       const matchesSearch = text.includes(search.toLowerCase());
+
       const matchesTown =
-        town === "All towns" || offer.town === town;
+        town === "All towns" || listing.town === town;
+
       const matchesDistance =
-        offer.distance <= Number(distance);
+        listing.distance <= Number(distance);
+
       const matchesCategory =
         category === "All categories" ||
-        offer.category === category;
+        listing.category === category;
 
       return (
         matchesSearch &&
@@ -210,351 +208,442 @@ export default function BrowsePage() {
         matchesCategory
       );
     });
-  }, [offers, search, town, distance, category]);
+  }, [listings, search, town, distance, category]);
 
   return (
     <main
-      className="container"
-      style={{ padding: "2rem 0 4rem" }}
+      style={{
+        background: "#f7f6f1",
+        minHeight: "100vh",
+        paddingBottom: "4rem",
+      }}
     >
-      <section
+      <div
         style={{
-          background: "#f4efe3",
-          borderRadius: 24,
-          padding: "1.5rem",
-          marginBottom: "1.5rem",
+          maxWidth: 1100,
+          margin: "0 auto",
+          padding: "22px 16px",
         }}
       >
-        <p
+        <section
           style={{
-            fontWeight: 800,
-            color: "#315c44",
-            letterSpacing: "0.08em",
-            marginBottom: "0.5rem",
+            marginBottom: 22,
           }}
         >
-          LOCALLOOP NEAR YOU
-        </p>
+          <p
+            style={{
+              color: "#315c44",
+              fontWeight: 900,
+              letterSpacing: "0.08em",
+              fontSize: 13,
+              margin: "0 0 8px",
+            }}
+          >
+            LOCALLOOP MARKETPLACE
+          </p>
 
-        <h1
+          <h1
+            style={{
+              margin: "0 0 8px",
+              fontSize: "clamp(2.2rem, 8vw, 4rem)",
+              lineHeight: 1,
+              letterSpacing: "-0.04em",
+            }}
+          >
+            Find something useful nearby
+          </h1>
+
+          <p
+            style={{
+              color: "#6b6f69",
+              fontSize: 16,
+              lineHeight: 1.5,
+              margin: "0 0 20px",
+              maxWidth: 680,
+            }}
+          >
+            Items, skills, services, transport and local help.
+            No public prices — make an offer and work out the details privately.
+          </p>
+
+          <input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search firewood, trailer, fencing, pickup..."
+            style={{
+              width: "100%",
+              boxSizing: "border-box",
+              background: "#fff",
+              border: "1px solid #d9d8d2",
+              borderRadius: 14,
+              padding: "15px 16px",
+              fontSize: 16,
+              outline: "none",
+            }}
+          />
+        </section>
+
+        <section
           style={{
-            fontSize: "clamp(2rem, 8vw, 3.8rem)",
-            lineHeight: 1.05,
-            marginBottom: "0.8rem",
+            display: "grid",
+            gridTemplateColumns:
+              "repeat(auto-fit, minmax(150px, 1fr))",
+            gap: 10,
+            marginBottom: 24,
           }}
         >
-          What do you need?
-        </h1>
+          <select
+            value={town}
+            onChange={(event) => setTown(event.target.value)}
+            style={{
+              width: "100%",
+              padding: 13,
+              borderRadius: 12,
+              border: "1px solid #d9d8d2",
+              background: "#fff",
+              fontSize: 14,
+            }}
+          >
+            {towns.map((item) => (
+              <option key={item}>{item}</option>
+            ))}
+          </select>
 
-        <p
+          <select
+            value={distance}
+            onChange={(event) => setDistance(event.target.value)}
+            style={{
+              width: "100%",
+              padding: 13,
+              borderRadius: 12,
+              border: "1px solid #d9d8d2",
+              background: "#fff",
+              fontSize: 14,
+            }}
+          >
+            <option value="25">Within 25 km</option>
+            <option value="50">Within 50 km</option>
+            <option value="100">Within 100 km</option>
+            <option value="150">Within 150 km</option>
+          </select>
+
+          <select
+            value={category}
+            onChange={(event) => setCategory(event.target.value)}
+            style={{
+              width: "100%",
+              padding: 13,
+              borderRadius: 12,
+              border: "1px solid #d9d8d2",
+              background: "#fff",
+              fontSize: 14,
+            }}
+          >
+            {categories.map((item) => (
+              <option key={item}>{item}</option>
+            ))}
+          </select>
+        </section>
+
+        <div
           style={{
-            color: "#5f625d",
-            marginBottom: "1rem",
-            maxWidth: 720,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 14,
           }}
         >
-          Find local people offering practical help, transport,
-          skills, produce and useful trades around the region.
-        </p>
+          <h2
+            style={{
+              margin: 0,
+              fontSize: 22,
+            }}
+          >
+            Nearby listings
+          </h2>
 
-        <input
-          value={search}
-          onChange={(event) =>
-            setSearch(event.target.value)
-          }
-          placeholder="Try: Pambula pickup, tractor, firewood, trailer..."
-          className="input"
-        />
-      </section>
+          <span
+            style={{
+              color: "#7b7e79",
+              fontSize: 14,
+            }}
+          >
+            {filteredListings.length} found
+          </span>
+        </div>
 
-      <section
-        style={{
-          display: "grid",
-          gridTemplateColumns:
-            "repeat(auto-fit, minmax(150px, 1fr))",
-          gap: "0.8rem",
-          marginBottom: "1.5rem",
-        }}
-      >
-        <select
-          className="select"
-          value={town}
-          onChange={(event) =>
-            setTown(event.target.value)
-          }
+        <section
+          style={{
+            display: "grid",
+            gridTemplateColumns:
+              "repeat(auto-fit, minmax(280px, 1fr))",
+            gap: 16,
+          }}
         >
-          {towns.map((item) => (
-            <option key={item}>{item}</option>
-          ))}
-        </select>
+          {filteredListings.map((listing) => {
+            const heroPhoto =
+              Array.isArray(listing.photos) &&
+              listing.photos.length > 0
+                ? listing.photos[0]
+                : null;
 
-        <select
-          className="select"
-          value={distance}
-          onChange={(event) =>
-            setDistance(event.target.value)
-          }
-        >
-          <option value="25">Within 25 km</option>
-          <option value="50">Within 50 km</option>
-          <option value="100">Within 100 km</option>
-          <option value="150">Within 150 km</option>
-        </select>
+            const description =
+              listing.type === "need"
+                ? listing.wants
+                : listing.offers;
 
-        <select
-          className="select"
-          value={category}
-          onChange={(event) =>
-            setCategory(event.target.value)
-          }
-        >
-          {categories.map((item) => (
-            <option key={item}>{item}</option>
-          ))}
-        </select>
-      </section>
+            const openTo =
+              listing.type === "need"
+                ? listing.offers
+                : listing.wants;
 
-      <section
-        style={{
-          display: "grid",
-          gap: "1rem",
-        }}
-      >
-        {filteredOffers.map((offer) => {
-          const hasRoute = Boolean(
-            (offer.from && offer.to) || offer.route
-          );
-
-          const heroPhoto =
-            Array.isArray(offer.photos) &&
-            offer.photos.length > 0
-              ? offer.photos[0]
-              : null;
-
-          return (
-            <article
-              key={offer.id}
-              style={{
-                background: "#fff",
-                border: "1px solid #ded8cd",
-                borderRadius: 18,
-                overflow: "hidden",
-                boxShadow:
-                  "0 8px 24px rgba(36, 48, 40, 0.05)",
-              }}
-            >
-              {heroPhoto && (
+            return (
+              <Link
+                key={listing.id}
+                href={`/listing/${listing.id}`}
+                style={{
+                  textDecoration: "none",
+                  color: "inherit",
+                  background: "#fff",
+                  borderRadius: 18,
+                  overflow: "hidden",
+                  border: "1px solid #dedbd3",
+                  boxShadow:
+                    "0 6px 18px rgba(36,48,40,0.05)",
+                  display: "block",
+                }}
+              >
                 <div
                   style={{
                     position: "relative",
+                    width: "100%",
+                    aspectRatio: "4 / 3",
+                    background: "#ebeae5",
+                    overflow: "hidden",
                   }}
                 >
-                  <img
-                    src={heroPhoto}
-                    alt={offer.title}
-                    style={{
-                      display: "block",
-                      width: "100%",
-                      height: 230,
-                      objectFit: "cover",
-                    }}
-                  />
+                  {heroPhoto ? (
+                    <img
+                      src={heroPhoto}
+                      alt={listing.title}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        display: "block",
+                      }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: 54,
+                      }}
+                    >
+                      🔄
+                    </div>
+                  )}
 
-                  {offer.demo && (
+                  {listing.demo && (
                     <span
                       style={{
                         position: "absolute",
                         top: 12,
                         left: 12,
-                        background: "#fff3d9",
-                        color: "#79500a",
+                        background: "rgba(255,255,255,0.94)",
+                        color: "#7a5518",
                         borderRadius: 999,
-                        padding: "0.45rem 0.75rem",
-                        fontSize: "0.78rem",
+                        padding: "6px 10px",
+                        fontSize: 11,
                         fontWeight: 900,
                       }}
                     >
                       DEMO
                     </span>
                   )}
-                </div>
-              )}
-
-              <div style={{ padding: "1.2rem" }}>
-                {!heroPhoto && offer.demo && (
-                  <span
-                    style={{
-                      display: "inline-block",
-                      background: "#fff3d9",
-                      color: "#79500a",
-                      borderRadius: 999,
-                      padding: "0.4rem 0.7rem",
-                      fontSize: "0.78rem",
-                      fontWeight: 900,
-                      marginBottom: "0.7rem",
-                    }}
-                  >
-                    DEMO
-                  </span>
-                )}
-
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
-                    gap: "1rem",
-                  }}
-                >
-                  <div>
-                    <p
-                      style={{
-                        color: "#315c44",
-                        fontWeight: 800,
-                        marginBottom: "0.25rem",
-                      }}
-                    >
-                      {offer.category}
-                    </p>
-
-                    <h2 style={{ margin: 0 }}>
-                      {offer.title}
-                    </h2>
-                  </div>
 
                   <span
                     style={{
-                      background: "#eef4ef",
+                      position: "absolute",
+                      bottom: 12,
+                      right: 12,
+                      background: "rgba(255,255,255,0.94)",
                       color: "#315c44",
                       borderRadius: 999,
-                      padding: "0.4rem 0.7rem",
-                      fontSize: "0.85rem",
-                      whiteSpace: "nowrap",
+                      padding: "7px 10px",
+                      fontSize: 12,
+                      fontWeight: 800,
                     }}
                   >
-                    {offer.distance} km
+                    {listing.distance} km
                   </span>
                 </div>
 
-                <p style={{ color: "#6b6f69" }}>
-                  {offer.person} · {offer.town}
-                </p>
-
-                {hasRoute && (
+                <div style={{ padding: 16 }}>
                   <div
                     style={{
-                      background: "#eef4ef",
-                      borderRadius: 14,
-                      padding: "0.9rem",
-                      marginBottom: "0.8rem",
+                      display: "flex",
+                      gap: 8,
+                      alignItems: "center",
+                      flexWrap: "wrap",
+                      marginBottom: 8,
+                    }}
+                  >
+                    <span
+                      style={{
+                        background: "#edf3ef",
+                        color: "#315c44",
+                        borderRadius: 999,
+                        padding: "6px 9px",
+                        fontSize: 12,
+                        fontWeight: 800,
+                      }}
+                    >
+                      {listing.category}
+                    </span>
+
+                    <span
+                      style={{
+                        color: "#7b7e79",
+                        fontSize: 13,
+                      }}
+                    >
+                      📍 {listing.town}
+                    </span>
+                  </div>
+
+                  <h2
+                    style={{
+                      margin: "0 0 8px",
+                      fontSize: 23,
+                      lineHeight: 1.12,
+                      letterSpacing: "-0.02em",
+                    }}
+                  >
+                    {listing.title}
+                  </h2>
+
+                  <p
+                    style={{
+                      margin: "0 0 12px",
+                      color: "#4f534f",
+                      lineHeight: 1.45,
+                      fontSize: 15,
+                    }}
+                  >
+                    {description}
+                  </p>
+
+                  {(listing.from ||
+                    listing.to ||
+                    listing.route) && (
+                    <div
+                      style={{
+                        background: "#f4f6f4",
+                        borderRadius: 12,
+                        padding: 10,
+                        marginBottom: 12,
+                        fontSize: 14,
+                        fontWeight: 700,
+                        color: "#315c44",
+                      }}
+                    >
+                      🛻{" "}
+                      {listing.from && listing.to
+                        ? `${listing.from} → ${listing.to}`
+                        : listing.route}
+                    </div>
+                  )}
+
+                  <div
+                    style={{
+                      borderTop: "1px solid #eceae4",
+                      paddingTop: 12,
+                      marginTop: 12,
                     }}
                   >
                     <div
                       style={{
-                        fontSize: "0.8rem",
-                        fontWeight: 800,
-                        color: "#315c44",
-                        marginBottom: "0.3rem",
+                        fontSize: 12,
+                        color: "#8a8d87",
+                        marginBottom: 4,
+                        fontWeight: 700,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.04em",
                       }}
                     >
-                      ROUTE
+                      Open to
                     </div>
 
-                    <strong>
-                      {offer.from && offer.to
-                        ? `${offer.from} → ${offer.to}`
-                        : offer.route}
+                    <p
+                      style={{
+                        margin: 0,
+                        color: "#315c44",
+                        fontWeight: 700,
+                        lineHeight: 1.4,
+                        fontSize: 14,
+                      }}
+                    >
+                      {openTo}
+                    </p>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginTop: 16,
+                      color: "#777b76",
+                      fontSize: 13,
+                    }}
+                  >
+                    <span>Listed by {listing.person}</span>
+
+                    <strong
+                      style={{
+                        color: "#315c44",
+                      }}
+                    >
+                      View →
                     </strong>
                   </div>
-                )}
-
-                <div
-                  style={{
-                    background: "#f8f6f1",
-                    borderRadius: 14,
-                    padding: "1rem",
-                    marginBottom: "1rem",
-                  }}
-                >
-                  {offer.type === "need" ? (
-                    <>
-                      <p
-                        style={{
-                          marginBottom: "0.7rem",
-                        }}
-                      >
-                        <strong>Needs:</strong>
-                        <br />
-                        {offer.wants}
-                      </p>
-
-                      <p style={{ margin: 0 }}>
-                        <strong>
-                          Offers in exchange:
-                        </strong>
-                        <br />
-                        {offer.offers}
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <p
-                        style={{
-                          marginBottom: "0.7rem",
-                        }}
-                      >
-                        <strong>Offers:</strong>
-                        <br />
-                        {offer.offers}
-                      </p>
-
-                      <p style={{ margin: 0 }}>
-                        <strong>
-                          Would like in exchange:
-                        </strong>
-                        <br />
-                        {offer.wants}
-                      </p>
-                    </>
-                  )}
                 </div>
+              </Link>
+            );
+          })}
+        </section>
 
-                <Link
-                  href={`/listing/${offer.id}`}
-                  style={{
-                    display: "block",
-                    textAlign: "center",
-                    background: "#315c44",
-                    color: "#fff",
-                    padding: "0.95rem 1rem",
-                    borderRadius: 12,
-                    textDecoration: "none",
-                    fontWeight: 800,
-                  }}
-                >
-                  View listing
-                </Link>
-              </div>
-            </article>
-          );
-        })}
-
-        {filteredOffers.length === 0 && (
+        {filteredListings.length === 0 && (
           <div
             style={{
-              background: "#f4efe3",
+              background: "#fff",
+              border: "1px solid #dedbd3",
               borderRadius: 18,
-              padding: "1.5rem",
+              padding: 26,
               textAlign: "center",
+              marginTop: 16,
             }}
           >
-            <h3>No matches yet</h3>
-            <p>
-              Try another town, distance or search term.
+            <h3 style={{ marginTop: 0 }}>
+              Nothing nearby yet
+            </h3>
+
+            <p
+              style={{
+                color: "#747872",
+                marginBottom: 0,
+              }}
+            >
+              Try a different town, category, distance or search.
             </p>
           </div>
         )}
-      </section>
+      </div>
     </main>
   );
 }
