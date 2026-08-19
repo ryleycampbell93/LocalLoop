@@ -17,24 +17,28 @@ type Listing = {
   from?: string;
   to?: string;
   photos?: string[];
+  demo?: boolean;
 };
 
 const demoOffers: Listing[] = [
   {
     id: "mitre10-pambula-pickup",
+    type: "offer",
     title: "Mitre 10 Pambula pickup",
     person: "Chris",
     town: "Cooma",
     distance: 104,
     category: "Pickups & Errands",
     offers:
-      "Can collect a prepaid hardware order from Mitre 10 Pambula and bring it toward Cooma.",
+      "Can collect a prepaid hardware order from Pambula and bring it toward Cooma.",
     wants: "Firewood, fresh produce, or another useful local favour.",
-    from: "Mitre 10, Pambula",
+    from: "Pambula",
     to: "Cooma",
+    demo: true,
   },
   {
     id: "merimbula-pharmacy-pickup",
+    type: "offer",
     title: "Merimbula pharmacy pickup",
     person: "Emma",
     town: "Cooma",
@@ -45,9 +49,11 @@ const demoOffers: Listing[] = [
     wants: "Garden help, dog minding, or help moving a few items.",
     from: "Merimbula",
     to: "Cooma",
+    demo: true,
   },
   {
     id: "click-and-collect-coast",
+    type: "offer",
     title: "Click & Collect pickup",
     person: "Dan",
     town: "Cooma",
@@ -58,9 +64,14 @@ const demoOffers: Listing[] = [
     wants: "Fresh eggs, mechanical help, trailer use, or another useful favour.",
     from: "Merimbula",
     to: "Cooma",
+    photos: [
+      "/0051362F-9E69-4362-AF78-586CC1593CF6.png",
+    ],
+    demo: true,
   },
   {
     id: "firewood-cooma",
+    type: "offer",
     title: "Firewood delivery around Cooma",
     person: "Steve",
     town: "Cooma",
@@ -69,9 +80,11 @@ const demoOffers: Listing[] = [
     offers:
       "Can deliver a ute load of firewood around Cooma and nearby areas.",
     wants: "Small carpentry work, welding help, or mower servicing.",
+    demo: true,
   },
   {
     id: "trailer-transport-jindabyne",
+    type: "offer",
     title: "Trailer transport help",
     person: "Sarah",
     town: "Jindabyne",
@@ -82,9 +95,11 @@ const demoOffers: Listing[] = [
     wants: "Garden cleanup, painting help, or computer assistance.",
     from: "Jindabyne",
     to: "Cooma",
+    demo: true,
   },
   {
     id: "fencing-bombala",
+    type: "need",
     title: "Need a hand with fencing",
     person: "Tom",
     town: "Bombala",
@@ -94,9 +109,11 @@ const demoOffers: Listing[] = [
       "Can trade livestock-yard cleanup, firewood or general farm help.",
     wants:
       "Someone experienced to help repair and tension a section of fencing.",
+    demo: true,
   },
   {
     id: "mechanical-cooma",
+    type: "offer",
     title: "Small engine & mechanical help",
     person: "Riley",
     town: "Cooma",
@@ -106,6 +123,7 @@ const demoOffers: Listing[] = [
       "Can help with basic mower, small engine and mechanical jobs.",
     wants:
       "Carpentry, transport help, fresh produce, or another useful local trade.",
+    demo: true,
   },
 ];
 
@@ -294,19 +312,56 @@ export default function BrowsePage() {
               }}
             >
               {heroPhoto && (
-                <img
-                  src={heroPhoto}
-                  alt={offer.title}
-                  style={{
-                    display: "block",
-                    width: "100%",
-                    height: 220,
-                    objectFit: "cover",
-                  }}
-                />
+                <div style={{ position: "relative" }}>
+                  <img
+                    src={heroPhoto}
+                    alt={offer.title}
+                    style={{
+                      display: "block",
+                      width: "100%",
+                      height: 220,
+                      objectFit: "cover",
+                    }}
+                  />
+
+                  {offer.demo && (
+                    <span
+                      style={{
+                        position: "absolute",
+                        top: 12,
+                        left: 12,
+                        background: "#fff3d9",
+                        color: "#79500a",
+                        borderRadius: 999,
+                        padding: "0.45rem 0.7rem",
+                        fontSize: "0.78rem",
+                        fontWeight: 900,
+                      }}
+                    >
+                      DEMO
+                    </span>
+                  )}
+                </div>
               )}
 
               <div style={{ padding: "1.2rem" }}>
+                {!heroPhoto && offer.demo && (
+                  <span
+                    style={{
+                      display: "inline-block",
+                      background: "#fff3d9",
+                      color: "#79500a",
+                      borderRadius: 999,
+                      padding: "0.4rem 0.7rem",
+                      fontSize: "0.78rem",
+                      fontWeight: 900,
+                      marginBottom: "0.7rem",
+                    }}
+                  >
+                    DEMO
+                  </span>
+                )}
+
                 <div
                   style={{
                     display: "flex",
