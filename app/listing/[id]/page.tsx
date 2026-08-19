@@ -1,400 +1,385 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 
 type Listing = {
   id: string;
+  type?: "need" | "offer";
   title: string;
-  description?: string;
-  price?: number | string;
-  image?: string;
-  images?: string[];
-  location?: string;
-  seller?: string;
-  sellerName?: string;
-  category?: string;
-  condition?: string;
+  person: string;
+  town: string;
+  distance: number;
+  category: string;
+  offers: string;
+  wants: string;
+  route?: string;
+  from?: string;
+  to?: string;
+  photos?: string[];
+  demo?: boolean;
 };
+
+const demoOffers: Listing[] = [
+  {
+    id: "mitre10-pambula-pickup",
+    type: "offer",
+    title: "Mitre 10 Pambula pickup",
+    person: "Chris",
+    town: "Cooma",
+    distance: 104,
+    category: "Pickups & Errands",
+    offers:
+      "Can collect a prepaid hardware order from Pambula and bring it toward Cooma.",
+    wants:
+      "Firewood, fresh produce, or another useful local favour.",
+    from: "Pambula",
+    to: "Cooma",
+    demo: true,
+  },
+  {
+    id: "merimbula-pharmacy-pickup",
+    type: "offer",
+    title: "Merimbula pharmacy pickup",
+    person: "Emma",
+    town: "Cooma",
+    distance: 108,
+    category: "Pickups & Errands",
+    offers:
+      "Can collect eligible prepaid pharmacy items when already travelling inland.",
+    wants:
+      "Garden help, dog minding, or help moving a few items.",
+    from: "Merimbula",
+    to: "Cooma",
+    demo: true,
+  },
+  {
+    id: "click-and-collect-coast",
+    type: "offer",
+    title: "Click & Collect pickup",
+    person: "Dan",
+    town: "Cooma",
+    distance: 110,
+    category: "Pickups & Errands",
+    offers:
+      "Heading from the coast toward Cooma and can collect a prepaid Click & Collect order.",
+    wants:
+      "Fresh eggs, mechanical help, trailer use, or another useful favour.",
+    from: "Merimbula",
+    to: "Cooma",
+    photos: ["/0051362F-9E69-4362-AF78-586CC1593CF6.png"],
+    demo: true,
+  },
+  {
+    id: "firewood-cooma",
+    type: "offer",
+    title: "Firewood delivery around Cooma",
+    person: "Steve",
+    town: "Cooma",
+    distance: 6,
+    category: "Home & Garden",
+    offers:
+      "Can deliver a ute load of firewood around Cooma and nearby areas.",
+    wants:
+      "Small carpentry work, welding help, or mower servicing.",
+    photos: ["/firewood-delivery.png.jpg"],
+    demo: true,
+  },
+  {
+    id: "trailer-transport-jindabyne",
+    type: "offer",
+    title: "Trailer transport help",
+    person: "Sarah",
+    town: "Jindabyne",
+    distance: 61,
+    category: "Transport",
+    offers:
+      "Can help move a mower, furniture or other suitable items with a trailer.",
+    wants:
+      "Garden cleanup, painting help, or computer assistance.",
+    from: "Jindabyne",
+    to: "Cooma",
+    demo: true,
+  },
+  {
+    id: "fencing-bombala",
+    type: "need",
+    title: "Need a hand with fencing",
+    person: "Tom",
+    town: "Bombala",
+    distance: 84,
+    category: "Trades & Farm",
+    offers:
+      "Can trade livestock-yard cleanup, firewood or general farm help.",
+    wants:
+      "Someone experienced to help repair and tension a section of fencing.",
+    demo: true,
+  },
+  {
+    id: "mechanical-cooma",
+    type: "offer",
+    title: "Small engine & mechanical help",
+    person: "Riley",
+    town: "Cooma",
+    distance: 4,
+    category: "Mechanical",
+    offers:
+      "Can help with basic mower, small engine and mechanical jobs.",
+    wants:
+      "Carpentry, transport help, fresh produce, or another useful local trade.",
+    demo: true,
+  },
+];
 
 export default function ListingPage() {
   const params = useParams();
-  const router = useRouter();
+  const id = String(params.id || "");
 
-  const id = String(params?.id || "");
-
-  const [listing, setListing] = useState<Listing | null>(null);
-  const [activeImage, setActiveImage] = useState(0);
+  const [listing, setListing] = useState<Listing | null | undefined>(
+    undefined
+  );
 
   useEffect(() => {
-    const savedListings = JSON.parse(
-      localStorage.getItem("localLoopListings") || "[]"
-    );
+    try {
+      const saved = JSON.parse(
+        localStorage.getItem("localloop-listings") || "[]"
+      );
 
-    const found = savedListings.find(
-      (item: Listing) => String(item.id) === id
-    );
+      const allListings = [
+        ...(Array.isArray(saved) ? saved : []),
+        ...demoOffers,
+      ];
 
-    if (found) {
-      setListing(found);
+      const found = allListings.find(
+        (item: Listing) => String(item.id) === id
+      );
+
+      setListing(found || null);
+    } catch {
+      const found = demoOffers.find((item) => item.id === id);
+      setListing(found || null);
     }
   }, [id]);
 
-  if (!listing) {
+  if (listing === undefined) {
     return (
-      <main
-        style={{
-          minHeight: "100vh",
-          background: "#f4f4f4",
-          padding: 20,
-          fontFamily: "Arial, sans-serif",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: 650,
-            margin: "50px auto",
-            background: "#fff",
-            borderRadius: 18,
-            padding: 28,
-          }}
-        >
-          <button
-            onClick={() => router.back()}
-            style={{
-              background: "transparent",
-              border: 0,
-              fontSize: 16,
-              padding: 0,
-              marginBottom: 20,
-              cursor: "pointer",
-            }}
-          >
-            ← Back
-          </button>
-
-          <h2>Listing not found</h2>
-
-          <p style={{ color: "#666" }}>
-            This listing may have been removed or is no longer available.
-          </p>
-
-          <button
-            onClick={() => router.push("/")}
-            style={{
-              marginTop: 12,
-              border: 0,
-              borderRadius: 12,
-              padding: "14px 18px",
-              background: "#d62f2f",
-              color: "#fff",
-              fontWeight: 700,
-              cursor: "pointer",
-            }}
-          >
-            Browse listings
-          </button>
-        </div>
+      <main className="container" style={{ padding: "4rem 0" }}>
+        <p>Loading listing...</p>
       </main>
     );
   }
 
-  const images =
-    listing.images && listing.images.length > 0
-      ? listing.images
-      : listing.image
-      ? [listing.image]
-      : [];
+  if (!listing) {
+    return (
+      <main className="container" style={{ padding: "4rem 0" }}>
+        <section
+          style={{
+            background: "#fff",
+            border: "1px solid #ded8cd",
+            borderRadius: 24,
+            padding: "2rem",
+          }}
+        >
+          <h1>Listing not found</h1>
 
-  const price =
-    typeof listing.price === "number"
-      ? `$${listing.price}`
-      : listing.price
-      ? String(listing.price).startsWith("$")
-        ? listing.price
-        : `$${listing.price}`
-      : "Make an offer";
-
-  function makeOffer() {
-    const query = new URLSearchParams({
-      listing: listing.id,
-      title: listing.title,
-    });
-
-    router.push(`/propose?${query.toString()}`);
+          <Link
+            href="/browse"
+            style={{
+              display: "inline-block",
+              marginTop: "1rem",
+              background: "#315c44",
+              color: "#fff",
+              padding: "0.9rem 1.2rem",
+              borderRadius: 12,
+              textDecoration: "none",
+              fontWeight: 800,
+            }}
+          >
+            Back to browse
+          </Link>
+        </section>
+      </main>
+    );
   }
+
+  const hasRoute = Boolean(
+    (listing.from && listing.to) || listing.route
+  );
 
   return (
     <main
-      style={{
-        minHeight: "100vh",
-        background: "#f4f4f4",
-        padding: "18px",
-        fontFamily: "Arial, sans-serif",
-      }}
+      className="container"
+      style={{ padding: "2rem 0 4rem" }}
     >
-      <div
+      <article
         style={{
-          maxWidth: 680,
-          margin: "0 auto",
+          background: "#fff",
+          border: "1px solid #ded8cd",
+          borderRadius: 24,
+          overflow: "hidden",
+          boxShadow: "0 8px 24px rgba(36,48,40,0.05)",
         }}
       >
-        <button
-          onClick={() => router.back()}
-          style={{
-            border: 0,
-            background: "transparent",
-            padding: "10px 0 16px",
-            fontSize: 16,
-            fontWeight: 600,
-            cursor: "pointer",
-          }}
-        >
-          ← Back
-        </button>
+        {listing.photos && listing.photos.length > 0 && (
+          <img
+            src={listing.photos[0]}
+            alt={listing.title}
+            style={{
+              display: "block",
+              width: "100%",
+              maxHeight: 430,
+              objectFit: "cover",
+            }}
+          />
+        )}
 
-        <div
-          style={{
-            background: "#fff",
-            borderRadius: 20,
-            overflow: "hidden",
-            boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
-          }}
-        >
-          {images.length > 0 ? (
-            <>
-              <div
-                style={{
-                  width: "100%",
-                  aspectRatio: "4 / 3",
-                  background: "#eee",
-                }}
-              >
-                <img
-                  src={images[activeImage]}
-                  alt={listing.title}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                  }}
-                />
-              </div>
-
-              {images.length > 1 && (
-                <div
-                  style={{
-                    display: "flex",
-                    gap: 8,
-                    overflowX: "auto",
-                    padding: 12,
-                  }}
-                >
-                  {images.map((image, index) => (
-                    <button
-                      key={image + index}
-                      onClick={() => setActiveImage(index)}
-                      style={{
-                        width: 72,
-                        height: 58,
-                        flex: "0 0 auto",
-                        padding: 0,
-                        border:
-                          activeImage === index
-                            ? "2px solid #d62f2f"
-                            : "1px solid #ddd",
-                        borderRadius: 9,
-                        overflow: "hidden",
-                        background: "#eee",
-                        cursor: "pointer",
-                      }}
-                    >
-                      <img
-                        src={image}
-                        alt=""
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                        }}
-                      />
-                    </button>
-                  ))}
-                </div>
-              )}
-            </>
-          ) : (
-            <div
+        <div style={{ padding: "1.5rem" }}>
+          {listing.demo && (
+            <span
               style={{
-                aspectRatio: "4 / 3",
-                background: "#e8e8e8",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 52,
+                display: "inline-block",
+                background: "#fff3d9",
+                color: "#79500a",
+                borderRadius: 999,
+                padding: "0.4rem 0.7rem",
+                fontSize: "0.78rem",
+                fontWeight: 900,
+                marginBottom: "0.8rem",
               }}
             >
-              📦
+              DEMO
+            </span>
+          )}
+
+          <p
+            style={{
+              color: "#315c44",
+              fontWeight: 800,
+              marginBottom: "0.5rem",
+            }}
+          >
+            {listing.category} · {listing.town}
+          </p>
+
+          <h1
+            style={{
+              fontSize: "clamp(2.2rem, 8vw, 4rem)",
+              lineHeight: 1,
+              marginBottom: "0.8rem",
+            }}
+          >
+            {listing.title}
+          </h1>
+
+          <p
+            style={{
+              color: "#6b6f69",
+              fontSize: "1.1rem",
+              marginBottom: "1.4rem",
+            }}
+          >
+            Posted by {listing.person}
+          </p>
+
+          {hasRoute && (
+            <div
+              style={{
+                background: "#eef4ef",
+                borderRadius: 16,
+                padding: "1rem",
+                marginBottom: "1rem",
+              }}
+            >
+              <strong style={{ color: "#315c44" }}>
+                ROUTE
+              </strong>
+
+              <div style={{ marginTop: "0.3rem" }}>
+                {listing.from && listing.to
+                  ? `${listing.from} → ${listing.to}`
+                  : listing.route}
+              </div>
             </div>
           )}
 
-          <div style={{ padding: 22 }}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                gap: 12,
-                alignItems: "flex-start",
-              }}
-            >
-              <div>
-                <h1
-                  style={{
-                    margin: 0,
-                    fontSize: 28,
-                    lineHeight: 1.15,
-                  }}
-                >
-                  {listing.title}
-                </h1>
-
-                {listing.location && (
-                  <p
-                    style={{
-                      color: "#777",
-                      margin: "8px 0 0",
-                      fontSize: 15,
-                    }}
-                  >
-                    📍 {listing.location}
-                  </p>
-                )}
-              </div>
-
-              <div
-                style={{
-                  fontSize: 24,
-                  fontWeight: 800,
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {price}
-              </div>
-            </div>
-
-            {(listing.category || listing.condition) && (
-              <div
-                style={{
-                  display: "flex",
-                  gap: 8,
-                  flexWrap: "wrap",
-                  marginTop: 18,
-                }}
-              >
-                {listing.category && (
-                  <span
-                    style={{
-                      background: "#f1f1f1",
-                      padding: "7px 10px",
-                      borderRadius: 999,
-                      fontSize: 13,
-                    }}
-                  >
-                    {listing.category}
-                  </span>
-                )}
-
-                {listing.condition && (
-                  <span
-                    style={{
-                      background: "#f1f1f1",
-                      padding: "7px 10px",
-                      borderRadius: 999,
-                      fontSize: 13,
-                    }}
-                  >
-                    {listing.condition}
-                  </span>
-                )}
-              </div>
-            )}
-
-            {listing.description && (
-              <div style={{ marginTop: 24 }}>
-                <h3 style={{ margin: "0 0 8px" }}>Description</h3>
-
-                <p
-                  style={{
-                    color: "#555",
-                    lineHeight: 1.6,
-                    margin: 0,
-                    whiteSpace: "pre-wrap",
-                  }}
-                >
-                  {listing.description}
+          <div
+            style={{
+              background: "#f8f6f1",
+              borderRadius: 18,
+              padding: "1.2rem",
+              marginBottom: "1.2rem",
+              lineHeight: 1.55,
+            }}
+          >
+            {listing.type === "need" ? (
+              <>
+                <p>
+                  <strong>Needs:</strong>
+                  <br />
+                  {listing.wants}
                 </p>
-              </div>
+
+                <p style={{ marginBottom: 0 }}>
+                  <strong>Offers in exchange:</strong>
+                  <br />
+                  {listing.offers}
+                </p>
+              </>
+            ) : (
+              <>
+                <p>
+                  <strong>Offers:</strong>
+                  <br />
+                  {listing.offers}
+                </p>
+
+                <p style={{ marginBottom: 0 }}>
+                  <strong>Would like in exchange:</strong>
+                  <br />
+                  {listing.wants}
+                </p>
+              </>
             )}
-
-            <div
-              style={{
-                marginTop: 24,
-                padding: 16,
-                borderRadius: 14,
-                background: "#f7f7f7",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 13,
-                  color: "#777",
-                  marginBottom: 4,
-                }}
-              >
-                Listed by
-              </div>
-
-              <div
-                style={{
-                  fontWeight: 700,
-                  fontSize: 16,
-                }}
-              >
-                {listing.sellerName || listing.seller || "LocalLoop member"}
-              </div>
-            </div>
-
-            <button
-              onClick={makeOffer}
-              style={{
-                width: "100%",
-                marginTop: 24,
-                border: 0,
-                borderRadius: 14,
-                padding: "17px 18px",
-                background: "#d62f2f",
-                color: "#fff",
-                fontSize: 17,
-                fontWeight: 800,
-                cursor: "pointer",
-              }}
-            >
-              Make Offer
-            </button>
-
-            <p
-              style={{
-                textAlign: "center",
-                color: "#888",
-                fontSize: 13,
-                margin: "12px 0 0",
-              }}
-            >
-              Send an offer directly to the seller.
-            </p>
           </div>
+
+          <Link
+            href={`/propose?listing=${encodeURIComponent(
+              listing.id
+            )}&title=${encodeURIComponent(listing.title)}`}
+            style={{
+              display: "block",
+              textAlign: "center",
+              background: "#315c44",
+              color: "#fff",
+              padding: "1rem",
+              borderRadius: 14,
+              textDecoration: "none",
+              fontWeight: 900,
+              fontSize: "1.05rem",
+              marginBottom: "0.8rem",
+            }}
+          >
+            Make an offer
+          </Link>
+
+          <Link
+            href="/browse"
+            style={{
+              display: "block",
+              textAlign: "center",
+              background: "#f4efe3",
+              color: "#315c44",
+              padding: "1rem",
+              borderRadius: 14,
+              textDecoration: "none",
+              fontWeight: 800,
+            }}
+          >
+            Back to browse
+          </Link>
         </div>
-      </div>
+      </article>
     </main>
   );
 }
