@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 
 type Listing = {
   id: string;
-  type?: string;
+  type?: "need" | "offer";
   title: string;
   person: string;
   town: string;
@@ -31,11 +31,13 @@ const demoOffers: Listing[] = [
     category: "Pickups & Errands",
     offers:
       "Can collect a prepaid hardware order from Pambula and bring it toward Cooma.",
-    wants: "Firewood, fresh produce, or another useful local favour.",
+    wants:
+      "Firewood, fresh produce, or another useful local favour.",
     from: "Pambula",
     to: "Cooma",
     demo: true,
   },
+
   {
     id: "merimbula-pharmacy-pickup",
     type: "offer",
@@ -46,11 +48,13 @@ const demoOffers: Listing[] = [
     category: "Pickups & Errands",
     offers:
       "Can collect eligible prepaid pharmacy items when already travelling inland.",
-    wants: "Garden help, dog minding, or help moving a few items.",
+    wants:
+      "Garden help, dog minding, or help moving a few items.",
     from: "Merimbula",
     to: "Cooma",
     demo: true,
   },
+
   {
     id: "click-and-collect-coast",
     type: "offer",
@@ -61,7 +65,8 @@ const demoOffers: Listing[] = [
     category: "Pickups & Errands",
     offers:
       "Heading from the coast toward Cooma and can collect a prepaid Click & Collect order.",
-    wants: "Fresh eggs, mechanical help, trailer use, or another useful favour.",
+    wants:
+      "Fresh eggs, mechanical help, trailer use, or another useful favour.",
     from: "Merimbula",
     to: "Cooma",
     photos: [
@@ -69,6 +74,7 @@ const demoOffers: Listing[] = [
     ],
     demo: true,
   },
+
   {
     id: "firewood-cooma",
     type: "offer",
@@ -79,9 +85,12 @@ const demoOffers: Listing[] = [
     category: "Home & Garden",
     offers:
       "Can deliver a ute load of firewood around Cooma and nearby areas.",
-    wants: "Small carpentry work, welding help, or mower servicing.",
+    wants:
+      "Small carpentry work, welding help, or mower servicing.",
+    photos: ["/firewood-delivery.png"],
     demo: true,
   },
+
   {
     id: "trailer-transport-jindabyne",
     type: "offer",
@@ -92,11 +101,13 @@ const demoOffers: Listing[] = [
     category: "Transport",
     offers:
       "Can help move a mower, furniture or other suitable items with a trailer.",
-    wants: "Garden cleanup, painting help, or computer assistance.",
+    wants:
+      "Garden cleanup, painting help, or computer assistance.",
     from: "Jindabyne",
     to: "Cooma",
     demo: true,
   },
+
   {
     id: "fencing-bombala",
     type: "need",
@@ -111,6 +122,7 @@ const demoOffers: Listing[] = [
       "Someone experienced to help repair and tension a section of fencing.",
     demo: true,
   },
+
   {
     id: "mechanical-cooma",
     type: "offer",
@@ -132,7 +144,8 @@ export default function BrowsePage() {
   const [search, setSearch] = useState("");
   const [town, setTown] = useState("All towns");
   const [distance, setDistance] = useState("150");
-  const [category, setCategory] = useState("All categories");
+  const [category, setCategory] =
+    useState("All categories");
 
   useEffect(() => {
     try {
@@ -156,7 +169,9 @@ export default function BrowsePage() {
   const towns = useMemo(
     () => [
       "All towns",
-      ...Array.from(new Set(offers.map((offer) => offer.town))),
+      ...Array.from(
+        new Set(offers.map((offer) => offer.town))
+      ),
     ],
     [offers]
   );
@@ -164,7 +179,9 @@ export default function BrowsePage() {
   const categories = useMemo(
     () => [
       "All categories",
-      ...Array.from(new Set(offers.map((offer) => offer.category))),
+      ...Array.from(
+        new Set(offers.map((offer) => offer.category))
+      ),
     ],
     [offers]
   );
@@ -182,11 +199,19 @@ export default function BrowsePage() {
         ${offer.route || ""}
       `.toLowerCase();
 
-      const matchesSearch = text.includes(search.toLowerCase());
-      const matchesTown = town === "All towns" || offer.town === town;
-      const matchesDistance = offer.distance <= Number(distance);
+      const matchesSearch = text.includes(
+        search.toLowerCase()
+      );
+
+      const matchesTown =
+        town === "All towns" || offer.town === town;
+
+      const matchesDistance =
+        offer.distance <= Number(distance);
+
       const matchesCategory =
-        category === "All categories" || offer.category === category;
+        category === "All categories" ||
+        offer.category === category;
 
       return (
         matchesSearch &&
@@ -198,7 +223,10 @@ export default function BrowsePage() {
   }, [offers, search, town, distance, category]);
 
   return (
-    <main className="container" style={{ padding: "2rem 0 4rem" }}>
+    <main
+      className="container"
+      style={{ padding: "2rem 0 4rem" }}
+    >
       <section
         style={{
           background: "#f4efe3",
@@ -235,13 +263,16 @@ export default function BrowsePage() {
             maxWidth: 720,
           }}
         >
-          Find local people offering practical help, transport, skills,
-          produce and useful trades around the region.
+          Find local people offering practical help,
+          transport, skills, produce and useful trades
+          around the region.
         </p>
 
         <input
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(event) =>
+            setSearch(event.target.value)
+          }
           placeholder="Try: Pambula pickup, tractor, firewood, trailer..."
           className="input"
         />
@@ -259,7 +290,9 @@ export default function BrowsePage() {
         <select
           className="select"
           value={town}
-          onChange={(e) => setTown(e.target.value)}
+          onChange={(event) =>
+            setTown(event.target.value)
+          }
         >
           {towns.map((item) => (
             <option key={item}>{item}</option>
@@ -269,7 +302,9 @@ export default function BrowsePage() {
         <select
           className="select"
           value={distance}
-          onChange={(e) => setDistance(e.target.value)}
+          onChange={(event) =>
+            setDistance(event.target.value)
+          }
         >
           <option value="25">Within 25 km</option>
           <option value="50">Within 50 km</option>
@@ -280,7 +315,9 @@ export default function BrowsePage() {
         <select
           className="select"
           value={category}
-          onChange={(e) => setCategory(e.target.value)}
+          onChange={(event) =>
+            setCategory(event.target.value)
+          }
         >
           {categories.map((item) => (
             <option key={item}>{item}</option>
@@ -288,14 +325,20 @@ export default function BrowsePage() {
         </select>
       </section>
 
-      <section style={{ display: "grid", gap: "1rem" }}>
+      <section
+        style={{
+          display: "grid",
+          gap: "1rem",
+        }}
+      >
         {filteredOffers.map((offer) => {
           const hasRoute = Boolean(
             (offer.from && offer.to) || offer.route
           );
 
           const heroPhoto =
-            Array.isArray(offer.photos) && offer.photos.length > 0
+            Array.isArray(offer.photos) &&
+            offer.photos.length > 0
               ? offer.photos[0]
               : null;
 
@@ -312,14 +355,18 @@ export default function BrowsePage() {
               }}
             >
               {heroPhoto && (
-                <div style={{ position: "relative" }}>
+                <div
+                  style={{
+                    position: "relative",
+                  }}
+                >
                   <img
                     src={heroPhoto}
                     alt={offer.title}
                     style={{
                       display: "block",
                       width: "100%",
-                      height: 220,
+                      height: 230,
                       objectFit: "cover",
                     }}
                   />
@@ -333,7 +380,7 @@ export default function BrowsePage() {
                         background: "#fff3d9",
                         color: "#79500a",
                         borderRadius: 999,
-                        padding: "0.45rem 0.7rem",
+                        padding: "0.45rem 0.75rem",
                         fontSize: "0.78rem",
                         fontWeight: 900,
                       }}
@@ -366,8 +413,8 @@ export default function BrowsePage() {
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
-                    gap: "1rem",
                     alignItems: "flex-start",
+                    gap: "1rem",
                   }}
                 >
                   <div>
@@ -381,7 +428,9 @@ export default function BrowsePage() {
                       {offer.category}
                     </p>
 
-                    <h2 style={{ margin: 0 }}>{offer.title}</h2>
+                    <h2 style={{ margin: 0 }}>
+                      {offer.title}
+                    </h2>
                   </div>
 
                   <span
@@ -440,28 +489,40 @@ export default function BrowsePage() {
                 >
                   {offer.type === "need" ? (
                     <>
-                      <p style={{ marginBottom: "0.7rem" }}>
+                      <p
+                        style={{
+                          marginBottom: "0.7rem",
+                        }}
+                      >
                         <strong>Needs:</strong>
                         <br />
                         {offer.wants}
                       </p>
 
                       <p style={{ margin: 0 }}>
-                        <strong>Offers in exchange:</strong>
+                        <strong>
+                          Offers in exchange:
+                        </strong>
                         <br />
                         {offer.offers}
                       </p>
                     </>
                   ) : (
                     <>
-                      <p style={{ marginBottom: "0.7rem" }}>
+                      <p
+                        style={{
+                          marginBottom: "0.7rem",
+                        }}
+                      >
                         <strong>Offers:</strong>
                         <br />
                         {offer.offers}
                       </p>
 
                       <p style={{ margin: 0 }}>
-                        <strong>Would like in exchange:</strong>
+                        <strong>
+                          Would like in exchange:
+                        </strong>
                         <br />
                         {offer.wants}
                       </p>
@@ -476,7 +537,7 @@ export default function BrowsePage() {
                     textAlign: "center",
                     background: "#315c44",
                     color: "#fff",
-                    padding: "0.9rem 1rem",
+                    padding: "0.95rem 1rem",
                     borderRadius: 12,
                     textDecoration: "none",
                     fontWeight: 800,
@@ -499,7 +560,9 @@ export default function BrowsePage() {
             }}
           >
             <h3>No matches yet</h3>
-            <p>Try another town, distance or search term.</p>
+            <p>
+              Try another town, distance or search term.
+            </p>
           </div>
         )}
       </section>
