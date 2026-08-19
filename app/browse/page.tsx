@@ -87,7 +87,7 @@ const demoOffers: Listing[] = [
       "Can deliver a ute load of firewood around Cooma and nearby areas.",
     wants:
       "Small carpentry work, welding help, or mower servicing.",
-    photos: ["/firewood-delivery.png"],
+    photos: ["/firewood-delivery.png.jpg"],
     demo: true,
   },
 
@@ -144,8 +144,7 @@ export default function BrowsePage() {
   const [search, setSearch] = useState("");
   const [town, setTown] = useState("All towns");
   const [distance, setDistance] = useState("150");
-  const [category, setCategory] =
-    useState("All categories");
+  const [category, setCategory] = useState("All categories");
 
   useEffect(() => {
     try {
@@ -169,9 +168,7 @@ export default function BrowsePage() {
   const towns = useMemo(
     () => [
       "All towns",
-      ...Array.from(
-        new Set(offers.map((offer) => offer.town))
-      ),
+      ...Array.from(new Set(offers.map((offer) => offer.town))),
     ],
     [offers]
   );
@@ -179,9 +176,7 @@ export default function BrowsePage() {
   const categories = useMemo(
     () => [
       "All categories",
-      ...Array.from(
-        new Set(offers.map((offer) => offer.category))
-      ),
+      ...Array.from(new Set(offers.map((offer) => offer.category))),
     ],
     [offers]
   );
@@ -199,16 +194,11 @@ export default function BrowsePage() {
         ${offer.route || ""}
       `.toLowerCase();
 
-      const matchesSearch = text.includes(
-        search.toLowerCase()
-      );
-
+      const matchesSearch = text.includes(search.toLowerCase());
       const matchesTown =
         town === "All towns" || offer.town === town;
-
       const matchesDistance =
         offer.distance <= Number(distance);
-
       const matchesCategory =
         category === "All categories" ||
         offer.category === category;
@@ -263,9 +253,8 @@ export default function BrowsePage() {
             maxWidth: 720,
           }}
         >
-          Find local people offering practical help,
-          transport, skills, produce and useful trades
-          around the region.
+          Find local people offering practical help, transport,
+          skills, produce and useful trades around the region.
         </p>
 
         <input
