@@ -10,15 +10,23 @@ export default function ProposePage() {
   const listingId = searchParams.get("listing") || "";
   const listingTitle = searchParams.get("title") || "this listing";
 
-  const [offer, setOffer] = useState("");
+  const [offerType, setOfferType] = useState("");
+  const [offerText, setOfferText] = useState("");
   const [message, setMessage] = useState("");
-  const [delivery, setDelivery] = useState("pickup");
   const [sent, setSent] = useState(false);
+
+  const offerTypes = [
+    { id: "item", label: "Item", icon: "📦" },
+    { id: "service", label: "Service", icon: "🛠️" },
+    { id: "labour", label: "Labour", icon: "💪" },
+    { id: "transport", label: "Transport", icon: "🛻" },
+    { id: "other", label: "Other", icon: "🔄" },
+  ];
 
   function sendOffer(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!offer.trim()) return;
+    if (!offerType || !offerText.trim()) return;
 
     const existingOffers = JSON.parse(
       localStorage.getItem("localLoopOffers") || "[]"
@@ -28,9 +36,9 @@ export default function ProposePage() {
       id: Date.now().toString(),
       listingId,
       listingTitle,
-      offer,
+      offerType,
+      offerText,
       message,
-      delivery,
       status: "pending",
       createdAt: new Date().toISOString(),
     };
@@ -48,7 +56,7 @@ export default function ProposePage() {
       <main
         style={{
           minHeight: "100vh",
-          background: "#f5f5f5",
+          background: "#f4f4f4",
           padding: "24px 18px",
           fontFamily: "Arial, sans-serif",
         }}
@@ -65,14 +73,14 @@ export default function ProposePage() {
         >
           <div
             style={{
-              width: 58,
-              height: 58,
+              width: 60,
+              height: 60,
               borderRadius: "50%",
               background: "#e8f5e9",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: 28,
+              fontSize: 30,
               marginBottom: 18,
             }}
           >
@@ -91,7 +99,7 @@ export default function ProposePage() {
             }}
           >
             Your offer for <strong>{listingTitle}</strong> has been sent.
-            The seller can accept, decline or counter.
+            The other person can accept, counter or decline.
           </p>
 
           <button
@@ -108,7 +116,7 @@ export default function ProposePage() {
               cursor: "pointer",
             }}
           >
-            View messages
+            Go to messages
           </button>
 
           <button
@@ -137,19 +145,19 @@ export default function ProposePage() {
     <main
       style={{
         minHeight: "100vh",
-        background: "#f5f5f5",
+        background: "#f4f4f4",
         padding: "24px 18px",
         fontFamily: "Arial, sans-serif",
       }}
     >
       <div
         style={{
-          maxWidth: 520,
-          margin: "30px auto",
+          maxWidth: 540,
+          margin: "24px auto",
           background: "#fff",
           borderRadius: 20,
           padding: 24,
-          boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+          boxShadow: "0 8px 24px rgba(0,0,0,0.07)",
         }}
       >
         <button
@@ -166,7 +174,12 @@ export default function ProposePage() {
           ← Back
         </button>
 
-        <h1 style={{ margin: "0 0 6px", fontSize: 28 }}>
+        <h1
+          style={{
+            margin: "0 0 6px",
+            fontSize: 28,
+          }}
+        >
           Make an offer
         </h1>
 
@@ -177,7 +190,7 @@ export default function ProposePage() {
             lineHeight: 1.45,
           }}
         >
-          Send a quick offer for <strong>{listingTitle}</strong>.
+          What would you offer for <strong>{listingTitle}</strong>?
         </p>
 
         <form onSubmit={sendOffer}>
@@ -185,38 +198,82 @@ export default function ProposePage() {
             style={{
               display: "block",
               fontWeight: 700,
-              marginBottom: 8,
+              marginBottom: 10,
             }}
           >
-            Your offer
+            What are you offering?
           </label>
 
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              border: "1px solid #ccc",
-              borderRadius: 12,
-              padding: "0 14px",
-              marginBottom: 20,
+              display: "grid",
+              gridTemplateColumns: "repeat(2, 1fr)",
+              gap: 10,
+              marginBottom: 22,
             }}
           >
-            <span style={{ fontWeight: 700, marginRight: 8 }}>$</span>
+            {offerTypes.map((type) => {
+              const selected = offerType === type.id;
 
-            <input
-              value={offer}
-              onChange={(e) => setOffer(e.target.value)}
-              inputMode="decimal"
-              placeholder="Enter amount"
-              style={{
-                flex: 1,
-                border: 0,
-                outline: 0,
-                padding: "15px 0",
-                fontSize: 17,
-              }}
-            />
+              return (
+                <button
+                  key={type.id}
+                  type="button"
+                  onClick={() => setOfferType(type.id)}
+                  style={{
+                    padding: "16px 10px",
+                    borderRadius: 14,
+                    border: selected
+                      ? "2px solid #d62f2f"
+                      : "1px solid #ddd",
+                    background: selected ? "#fff3f3" : "#fff",
+                    cursor: "pointer",
+                    textAlign: "left",
+                  }}
+                >
+                  <div style={{ fontSize: 24, marginBottom: 6 }}>
+                    {type.icon}
+                  </div>
+
+                  <div
+                    style={{
+                      fontWeight: 700,
+                      fontSize: 15,
+                    }}
+                  >
+                    {type.label}
+                  </div>
+                </button>
+              );
+            })}
           </div>
+
+          <label
+            style={{
+              display: "block",
+              fontWeight: 700,
+              marginBottom: 8,
+            }}
+          >
+            Describe your offer
+          </label>
+
+          <textarea
+            value={offerText}
+            onChange={(e) => setOfferText(e.target.value)}
+            placeholder="Example: My chainsaw and a load of firewood..."
+            rows={4}
+            style={{
+              width: "100%",
+              boxSizing: "border-box",
+              border: "1px solid #ccc",
+              borderRadius: 12,
+              padding: 14,
+              fontSize: 16,
+              resize: "vertical",
+              marginBottom: 20,
+            }}
+          />
 
           <label
             style={{
@@ -240,8 +297,8 @@ export default function ProposePage() {
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            placeholder="Add a quick message to the seller..."
-            rows={4}
+            placeholder="Anything else you want them to know?"
+            rows={3}
             style={{
               width: "100%",
               boxSizing: "border-box",
@@ -250,95 +307,40 @@ export default function ProposePage() {
               padding: 14,
               fontSize: 16,
               resize: "vertical",
-              marginBottom: 20,
+              marginBottom: 22,
             }}
           />
 
-          <label
-            style={{
-              display: "block",
-              fontWeight: 700,
-              marginBottom: 10,
-            }}
-          >
-            How will you get it?
-          </label>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 10,
-              marginBottom: 24,
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => setDelivery("pickup")}
-              style={{
-                padding: 14,
-                borderRadius: 12,
-                border:
-                  delivery === "pickup"
-                    ? "2px solid #d62f2f"
-                    : "1px solid #ccc",
-                background:
-                  delivery === "pickup" ? "#fff4f4" : "#fff",
-                fontWeight: 700,
-                cursor: "pointer",
-              }}
-            >
-              Pick up
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setDelivery("delivery")}
-              style={{
-                padding: 14,
-                borderRadius: 12,
-                border:
-                  delivery === "delivery"
-                    ? "2px solid #d62f2f"
-                    : "1px solid #ccc",
-                background:
-                  delivery === "delivery" ? "#fff4f4" : "#fff",
-                fontWeight: 700,
-                cursor: "pointer",
-              }}
-            >
-              Delivery
-            </button>
-          </div>
-
           <button
             type="submit"
-            disabled={!offer.trim()}
+            disabled={!offerType || !offerText.trim()}
             style={{
               width: "100%",
               border: 0,
-              borderRadius: 12,
+              borderRadius: 13,
               padding: "16px 18px",
-              background: offer.trim() ? "#d62f2f" : "#bbb",
+              background:
+                offerType && offerText.trim() ? "#d62f2f" : "#bbb",
               color: "#fff",
               fontSize: 17,
-              fontWeight: 700,
-              cursor: offer.trim() ? "pointer" : "default",
+              fontWeight: 800,
+              cursor:
+                offerType && offerText.trim() ? "pointer" : "default",
             }}
           >
-            Send offer
+            Send Offer
           </button>
 
           <p
             style={{
+              textAlign: "center",
               fontSize: 13,
               color: "#888",
-              lineHeight: 1.4,
-              margin: "14px 2px 0",
-              textAlign: "center",
+              lineHeight: 1.45,
+              margin: "14px 4px 0",
             }}
           >
-            The seller can accept, decline or counter your offer.
+            Once sent, you can continue discussing the deal privately in chat.
           </p>
         </form>
       </div>
