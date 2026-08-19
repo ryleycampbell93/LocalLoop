@@ -1,415 +1,594 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
-type Barter = {
+type Offer = {
   id: string;
   listingId: string;
-  title: string;
-  with: string;
-  town: string;
-  status: "Pending" | "Accepted" | "Completed";
-  when?: string;
-  where?: string;
-  youProvide: string;
-  theyProvide: string;
-  conditions?: string;
-  createdAt?: string;
-  acceptedAt?: string;
-  completedAt?: string;
-  receiptId?: string;
+  listingTitle: string;
+  listingOwner?: string;
+  offerType: string;
+  offerText: string;
+  message?: string;
+  status: "pending" | "accepted" | "declined" | "countered" | "completed";
+  createdAt: string;
+  counterText?: string;
 };
 
-export default function BartersPage() {
-  const [barters, setBarters] = useState<Barter[]>([]);
-  const [loaded, setLoaded] = useState(false);
+export default function MyDealsPage() {
+  const router = useRouter();
+
+  const [offers, setOffers] = useState<Offer[]>([]);
+  const [counterId, setCounterId] = useState<string | null>(null);
+  const [counterText, setCounterText] = useState("");
 
   useEffect(() => {
-    try {
-      const stored = JSON.parse(
-        localStorage.getItem("localloop-barters") || "[]"
-      );
-
-      if (Array.isArray(stored)) {
-        setBarters(stored);
-      }
-    } catch {
-      setBarters([]);
-    }
-
-    setLoaded(true);
+    loadOffers();
   }, []);
 
-  function saveBarters(next: Barter[]) {
-    setBarters(next);
-    localStorage.setItem("localloop-barters", JSON.stringify(next));
+  function loadOffers() {
+    try {
+      const stored = JSON.parse(
+        localStorage.getItem("localLoopOffers") || "[]"
+      );
+
+      setOffers(Array.isArray(stored) ? stored : []);
+    } catch {
+      setOffers([]);
+    }
   }
 
-  function acceptDeal(id: string) {
-    const next = barters.map((barter) => {
-      if (barter.id !== id) return barter;
+  function saveOffers(updated: Offer[]) {
+    setOffers(updated);
 
-      return {
-        ...barter,
-        status: "Accepted" as const,
-        acceptedAt: new Date().toISOString(),
-        receiptId:
-          barter.receiptId ||
-          `LL-${Date.now().toString().slice(-8)}`,
-      };
-    });
-
-    saveBarters(next);
-  }
-
-  function completeDeal(id: string) {
-    const next = barters.map((barter) => {
-      if (barter.id !== id) return barter;
-
-      return {
-        ...barter,
-        status: "Completed" as const,
-        completedAt: new Date().toISOString(),
-      };
-    });
-
-    saveBarters(next);
-  }
-
-  const counts = useMemo(() => {
-    return {
-      pending: barters.filter((item) => item.status === "Pending").length,
-      accepted: barters.filter((item) => item.status === "Accepted").length,
-      completed: barters.filter((item) => item.status === "Completed").length,
-    };
-  }, [barters]);
-
-  if (!loaded) {
-    return (
-      <main className="container" style={{ padding: "2rem 0" }}>
-        Loading your barters...
-      </main>
+    localStorage.setItem(
+      "localLoopOffers",
+      JSON.stringify(updated)
     );
   }
 
+  function changeStatus(
+    id: string,
+    status: Offer["status"]
+  ) {
+    const updated = offers.map((offer) =>
+      offer.id === id
+        ? { ...offer, status }
+        : offer
+    );
+
+    saveOffers(updated);
+  }
+
+  function sendCounter(id: string) {
+    if (!counterText.trim()) return;
+
+    const updated = offers.map((offer) =>
+      offer.id === id
+        ? {
+            ...offer,
+            status: "countered" as const,
+            counterText: counterText.trim(),
+          }
+        : offer
+    );
+
+    saveOffers(updated);
+    setCounterId(null);
+    setCounterText("");
+  }
+
+  function deleteDeal(id: string) {
+    const confirmed = window.confirm(
+      "Remove this completed deal from your history?"
+    );
+
+    if (!confirmed) return;
+
+    const updated = offers.filter(
+      (offer) => offer.id !== id
+    );
+
+    saveOffers(updated);
+  }
+
+  const incoming = offers.filter(
+    (offer) =>
+      offer.status === "pending" ||
+      offer.status === "countered"
+  );
+
+  const active = offers.filter(
+    (offer) => offer.status === "accepted"
+  );
+
+  const completed = offers.filter(
+    (offer) =>
+      offer.status === "completed" ||
+      offer.status === "declined"
+  );
+
+  function typeLabel(type: string) {
+    switch (type) {
+      case "item":
+        return "📦 Item";
+      case "service":
+        return "🛠️ Service";
+      case "labour":
+        return "💪 Labour";
+      case "transport":
+        return "🛻 Transport";
+      default:
+        return "🔄 Other";
+    }
+  }
+
+  const sectionTitle = {
+    fontSize: 22,
+    margin: "0 0 12px",
+  };
+
+  const cardStyle = {
+    background: "#fff",
+    border: "1px solid #dedbd3",
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 12,
+  };
+
+  const mainButton = {
+    border: 0,
+    borderRadius: 12,
+    padding: "12px 14px",
+    background: "#214d3d",
+    color: "#fff",
+    fontWeight: 800,
+    fontSize: 14,
+  };
+
+  const lightButton = {
+    border: 0,
+    borderRadius: 12,
+    padding: "12px 14px",
+    background: "#f1eee6",
+    color: "#214d3d",
+    fontWeight: 800,
+    fontSize: 14,
+  };
+
   return (
-    <main className="container" style={{ padding: "2rem 0 4rem" }}>
-      <section
+    <main
+      style={{
+        minHeight: "100vh",
+        background: "#f7f6f1",
+        padding: "24px 16px 70px",
+      }}
+    >
+      <div
         style={{
-          background: "#f4efe3",
-          borderRadius: 22,
-          padding: "1.4rem",
-          marginBottom: "1.2rem",
+          maxWidth: 720,
+          margin: "0 auto",
         }}
       >
         <p
           style={{
-            fontWeight: 800,
             color: "#315c44",
-            marginBottom: "0.4rem",
+            fontSize: 12,
+            fontWeight: 900,
+            letterSpacing: "0.08em",
+            margin: "0 0 7px",
           }}
         >
-          MY BARTERS
+          LOCALLOOP
         </p>
 
         <h1
           style={{
-            fontSize: "clamp(2rem, 8vw, 3.6rem)",
-            marginBottom: "0.7rem",
+            margin: "0 0 7px",
+            fontSize: 38,
+            lineHeight: 1,
           }}
         >
-          Your LocalLoop deals
+          My Deals
         </h1>
 
-        <p style={{ color: "#666", marginBottom: "1rem" }}>
-          Keep it simple: send an offer, accept the deal, then mark it complete.
+        <p
+          style={{
+            margin: "0 0 30px",
+            color: "#70746f",
+            lineHeight: 1.5,
+          }}
+        >
+          Review offers, agree on the details and keep track
+          of your LocalLoop deals.
         </p>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-            gap: "0.6rem",
-          }}
-        >
-          <div
-            style={{
-              background: "#fff",
-              borderRadius: 14,
-              padding: "0.8rem",
-              textAlign: "center",
-            }}
-          >
-            <strong>{counts.pending}</strong>
-            <div style={{ fontSize: "0.8rem", color: "#666" }}>Pending</div>
-          </div>
+        <section style={{ marginBottom: 34 }}>
+          <h2 style={sectionTitle}>
+            Incoming Offers
+          </h2>
 
-          <div
-            style={{
-              background: "#fff",
-              borderRadius: 14,
-              padding: "0.8rem",
-              textAlign: "center",
-            }}
-          >
-            <strong>{counts.accepted}</strong>
-            <div style={{ fontSize: "0.8rem", color: "#666" }}>Accepted</div>
-          </div>
-
-          <div
-            style={{
-              background: "#fff",
-              borderRadius: 14,
-              padding: "0.8rem",
-              textAlign: "center",
-            }}
-          >
-            <strong>{counts.completed}</strong>
-            <div style={{ fontSize: "0.8rem", color: "#666" }}>Completed</div>
-          </div>
-        </div>
-      </section>
-
-      {barters.length === 0 ? (
-        <section
-          style={{
-            background: "#fff",
-            border: "1px solid #ded8cd",
-            borderRadius: 18,
-            padding: "1.5rem",
-            textAlign: "center",
-          }}
-        >
-          <h2>No barters yet</h2>
-
-          <p>
-            When you send or receive an offer, it will appear here.
-          </p>
-
-          <Link className="btn" href="/browse">
-            Browse listings
-          </Link>
-        </section>
-      ) : (
-        <section style={{ display: "grid", gap: "1rem" }}>
-          {barters.map((barter) => {
-            const isPending = barter.status === "Pending";
-            const isAccepted = barter.status === "Accepted";
-            const isCompleted = barter.status === "Completed";
-
-            return (
-              <article
-                key={barter.id}
+          {incoming.length === 0 ? (
+            <div style={cardStyle}>
+              <p
                 style={{
-                  background: "#fff",
-                  border: "1px solid #ded8cd",
-                  borderRadius: 20,
-                  padding: "1.2rem",
-                  boxShadow: "0 8px 24px rgba(36, 48, 40, 0.05)",
+                  margin: 0,
+                  color: "#7b7f79",
                 }}
               >
+                No new offers at the moment.
+              </p>
+            </div>
+          ) : (
+            incoming.map((offer) => (
+              <div key={offer.id} style={cardStyle}>
                 <div
                   style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
-                    gap: "1rem",
-                    marginBottom: "1rem",
+                    color: "#315c44",
+                    fontSize: 13,
+                    fontWeight: 900,
+                    marginBottom: 6,
                   }}
                 >
-                  <div>
-                    <p
-                      style={{
-                        color: "#315c44",
-                        fontWeight: 800,
-                        marginBottom: "0.3rem",
-                      }}
-                    >
-                      {barter.with} · {barter.town}
-                    </p>
+                  {typeLabel(offer.offerType)}
+                </div>
 
-                    <h2 style={{ margin: 0 }}>{barter.title}</h2>
-                  </div>
+                <h3
+                  style={{
+                    margin: "0 0 6px",
+                    fontSize: 20,
+                  }}
+                >
+                  {offer.listingTitle}
+                </h3>
 
-                  <span
+                {offer.listingOwner && (
+                  <p
                     style={{
-                      background: isPending
-                        ? "#fff3d9"
-                        : isCompleted
-                        ? "#e9eee7"
-                        : "#eef4ef",
-                      color: "#315c44",
-                      borderRadius: 999,
-                      padding: "0.4rem 0.7rem",
-                      fontWeight: 800,
-                      fontSize: "0.85rem",
-                      whiteSpace: "nowrap",
+                      color: "#81857f",
+                      fontSize: 13,
+                      margin: "0 0 14px",
                     }}
                   >
-                    {barter.status}
-                  </span>
-                </div>
+                    Listing by {offer.listingOwner}
+                  </p>
+                )}
 
                 <div
                   style={{
-                    background: "#f8f6f1",
-                    borderRadius: 14,
-                    padding: "1rem",
-                    marginBottom: "1rem",
+                    background: "#f5f6f3",
+                    borderRadius: 13,
+                    padding: 13,
+                    marginBottom: 12,
                   }}
                 >
-                  <p style={{ marginBottom: "0.7rem" }}>
-                    <strong>You provide:</strong>
-                    <br />
-                    {barter.youProvide}
-                  </p>
-
-                  <p style={{ marginBottom: "0.7rem" }}>
-                    <strong>You receive:</strong>
-                    <br />
-                    {barter.theyProvide}
-                  </p>
-
-                  {barter.when && (
-                    <p style={{ marginBottom: "0.7rem" }}>
-                      <strong>When:</strong> {barter.when}
-                    </p>
-                  )}
-
-                  {barter.where && (
-                    <p style={{ marginBottom: "0.7rem" }}>
-                      <strong>Where:</strong> {barter.where}
-                    </p>
-                  )}
-
-                  {barter.conditions && (
-                    <p style={{ marginBottom: 0 }}>
-                      <strong>Notes:</strong> {barter.conditions}
-                    </p>
-                  )}
-                </div>
-
-                {isPending && (
-                  <div style={{ display: "grid", gap: "0.8rem" }}>
-                    <button
-                      className="btn"
-                      onClick={() => acceptDeal(barter.id)}
-                    >
-                      Accept deal
-                    </button>
-
-                    <Link
-                      href={`/messages?listing=${barter.listingId}`}
-                      style={{
-                        textAlign: "center",
-                        background: "#f4efe3",
-                        color: "#315c44",
-                        padding: "0.9rem",
-                        borderRadius: 12,
-                        fontWeight: 800,
-                      }}
-                    >
-                      Message about offer
-                    </Link>
-                  </div>
-                )}
-
-                {isAccepted && (
-                  <div style={{ display: "grid", gap: "0.8rem" }}>
-                    <div
-                      style={{
-                        background: "#eef4ef",
-                        borderRadius: 14,
-                        padding: "1rem",
-                      }}
-                    >
-                      <h3 style={{ marginTop: 0 }}>Deal confirmed ✓</h3>
-
-                      <p style={{ marginBottom: "0.4rem" }}>
-                        <strong>Barter Receipt:</strong>{" "}
-                        {barter.receiptId}
-                      </p>
-
-                      <p style={{ marginBottom: 0, fontSize: "0.9rem" }}>
-                        LocalLoop has recorded what both sides agreed to.
-                      </p>
-                    </div>
-
-                    <button
-                      className="btn"
-                      onClick={() => completeDeal(barter.id)}
-                    >
-                      Mark as completed
-                    </button>
-
-                    <Link
-                      href={`/messages?listing=${barter.listingId}`}
-                      style={{
-                        textAlign: "center",
-                        background: "#f4efe3",
-                        color: "#315c44",
-                        padding: "0.9rem",
-                        borderRadius: 12,
-                        fontWeight: 800,
-                      }}
-                    >
-                      Message about deal
-                    </Link>
-                  </div>
-                )}
-
-                {isCompleted && (
                   <div
                     style={{
-                      background: "#eef4ef",
-                      borderRadius: 14,
-                      padding: "1rem",
+                      fontSize: 11,
+                      fontWeight: 900,
+                      color: "#747a74",
+                      textTransform: "uppercase",
+                      marginBottom: 5,
                     }}
                   >
-                    <h3 style={{ marginTop: 0 }}>Barter completed ✓</h3>
+                    Offer
+                  </div>
 
-                    <p style={{ marginBottom: "0.8rem" }}>
-                      Receipt: {barter.receiptId || "Saved"}
-                    </p>
+                  <div
+                    style={{
+                      lineHeight: 1.45,
+                    }}
+                  >
+                    {offer.offerText}
+                  </div>
+                </div>
 
-                    <button
-                      type="button"
+                {offer.message && (
+                  <p
+                    style={{
+                      color: "#60655f",
+                      lineHeight: 1.45,
+                      margin: "0 0 14px",
+                    }}
+                  >
+                    “{offer.message}”
+                  </p>
+                )}
+
+                {offer.status === "countered" &&
+                  offer.counterText && (
+                    <div
                       style={{
-                        width: "100%",
-                        border: "1px solid #315c44",
-                        background: "#fff",
-                        color: "#315c44",
-                        padding: "0.9rem",
-                        borderRadius: 12,
-                        fontWeight: 800,
+                        background: "#fff7e6",
+                        borderRadius: 13,
+                        padding: 13,
+                        marginBottom: 14,
                       }}
                     >
-                      Leave a review
+                      <strong>Counter offer:</strong>
+                      <div style={{ marginTop: 4 }}>
+                        {offer.counterText}
+                      </div>
+                    </div>
+                  )}
+
+                {counterId === offer.id ? (
+                  <div>
+                    <textarea
+                      value={counterText}
+                      onChange={(e) =>
+                        setCounterText(e.target.value)
+                      }
+                      placeholder="What would work better for you?"
+                      rows={3}
+                      style={{
+                        width: "100%",
+                        boxSizing: "border-box",
+                        border: "1px solid #ccc",
+                        borderRadius: 12,
+                        padding: 12,
+                        fontSize: 15,
+                        marginBottom: 9,
+                      }}
+                    />
+
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",
+                        gap: 8,
+                      }}
+                    >
+                      <button
+                        onClick={() =>
+                          sendCounter(offer.id)
+                        }
+                        style={mainButton}
+                      >
+                        Send counter
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setCounterId(null);
+                          setCounterText("");
+                        }}
+                        style={lightButton}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns:
+                        "repeat(3, 1fr)",
+                      gap: 8,
+                    }}
+                  >
+                    <button
+                      onClick={() =>
+                        changeStatus(
+                          offer.id,
+                          "accepted"
+                        )
+                      }
+                      style={mainButton}
+                    >
+                      Accept
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        setCounterId(offer.id)
+                      }
+                      style={lightButton}
+                    >
+                      Counter
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        changeStatus(
+                          offer.id,
+                          "declined"
+                        )
+                      }
+                      style={{
+                        ...lightButton,
+                        color: "#8b2e2e",
+                      }}
+                    >
+                      Decline
                     </button>
                   </div>
                 )}
-              </article>
-            );
-          })}
+              </div>
+            ))
+          )}
         </section>
-      )}
 
-      <section
-        style={{
-          marginTop: "1.2rem",
-          background: "#f4efe3",
-          borderRadius: 16,
-          padding: "1rem",
-        }}
-      >
-        <strong>How LocalLoop deals work</strong>
+        <section style={{ marginBottom: 34 }}>
+          <h2 style={sectionTitle}>
+            Active Deals
+          </h2>
 
-        <p style={{ marginBottom: 0 }}>
-          Accepting a deal creates a simple record of the agreed exchange.
-          Standard LocalLoop policies apply to all users and listings.
-        </p>
-      </section>
+          {active.length === 0 ? (
+            <div style={cardStyle}>
+              <p
+                style={{
+                  margin: 0,
+                  color: "#7b7f79",
+                }}
+              >
+                No active deals yet.
+              </p>
+            </div>
+          ) : (
+            active.map((offer) => (
+              <div key={offer.id} style={cardStyle}>
+                <div
+                  style={{
+                    display: "inline-block",
+                    background: "#e7f1ea",
+                    color: "#214d3d",
+                    borderRadius: 999,
+                    padding: "6px 9px",
+                    fontSize: 11,
+                    fontWeight: 900,
+                    marginBottom: 10,
+                  }}
+                >
+                  DEAL AGREED
+                </div>
+
+                <h3
+                  style={{
+                    margin: "0 0 7px",
+                    fontSize: 20,
+                  }}
+                >
+                  {offer.listingTitle}
+                </h3>
+
+                <p
+                  style={{
+                    margin: "0 0 16px",
+                    color: "#575c57",
+                    lineHeight: 1.45,
+                  }}
+                >
+                  <strong>Your deal:</strong>{" "}
+                  {offer.offerText}
+                </p>
+
+                {offer.counterText && (
+                  <p
+                    style={{
+                      margin: "0 0 16px",
+                      color: "#575c57",
+                    }}
+                  >
+                    <strong>Agreed counter:</strong>{" "}
+                    {offer.counterText}
+                  </p>
+                )}
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: 8,
+                  }}
+                >
+                  <button
+                    onClick={() =>
+                      router.push(
+                        `/messages?listing=${encodeURIComponent(
+                          offer.listingId
+                        )}&title=${encodeURIComponent(
+                          offer.listingTitle
+                        )}`
+                      )
+                    }
+                    style={lightButton}
+                  >
+                    Open chat
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      changeStatus(
+                        offer.id,
+                        "completed"
+                      )
+                    }
+                    style={mainButton}
+                  >
+                    Mark complete
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </section>
+
+        <section>
+          <h2 style={sectionTitle}>
+            Completed
+          </h2>
+
+          {completed.length === 0 ? (
+            <div style={cardStyle}>
+              <p
+                style={{
+                  margin: 0,
+                  color: "#7b7f79",
+                }}
+              >
+                Completed deals will appear here.
+              </p>
+            </div>
+          ) : (
+            completed.map((offer) => (
+              <div key={offer.id} style={cardStyle}>
+                <div
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 900,
+                    marginBottom: 8,
+                    color:
+                      offer.status === "declined"
+                        ? "#8b2e2e"
+                        : "#315c44",
+                  }}
+                >
+                  {offer.status === "declined"
+                    ? "DECLINED"
+                    : "COMPLETED"}
+                </div>
+
+                <h3
+                  style={{
+                    margin: "0 0 6px",
+                    fontSize: 19,
+                  }}
+                >
+                  {offer.listingTitle}
+                </h3>
+
+                <p
+                  style={{
+                    margin: "0 0 14px",
+                    color: "#626761",
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {offer.offerText}
+                </p>
+
+                <button
+                  onClick={() =>
+                    deleteDeal(offer.id)
+                  }
+                  style={{
+                    border: 0,
+                    background: "transparent",
+                    color: "#9a3434",
+                    fontWeight: 800,
+                    padding: 0,
+                  }}
+                >
+                  Delete deal
+                </button>
+              </div>
+            ))
+          )}
+        </section>
+      </div>
     </main>
   );
 }
