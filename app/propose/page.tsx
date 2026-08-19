@@ -1,424 +1,347 @@
-
 "use client";
 
-import Link from "next/link";
-import { Suspense, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
-type Listing = {
-  id: string;
-  type?: "need" | "offer";
-  title: string;
-  person: string;
-  town: string;
-  offers: string;
-  wants: string;
-  from?: string;
-  to?: string;
-  route?: string;
-};
-
-const demoListings: Listing[] = [
-  {
-    id: "mitre10-pambula-pickup",
-    type: "offer",
-    title: "Mitre 10 Pambula pickup",
-    person: "Chris",
-    town: "Cooma",
-    offers:
-      "Can collect a prepaid hardware order from Mitre 10 Pambula and bring it toward Cooma.",
-    wants: "Fresh produce, firewood or another useful local favour.",
-    from: "Mitre 10, Pambula",
-    to: "Cooma",
-  },
-  {
-    id: "click-and-collect-coast",
-    type: "offer",
-    title: "Click & Collect pickup",
-    person: "Dan",
-    town: "Cooma",
-    offers:
-      "Can collect a prepaid Click & Collect order while travelling inland.",
-    wants: "Fresh eggs, mechanical help or another useful favour.",
-    from: "Merimbula",
-    to: "Cooma",
-  },
-  {
-    id: "mechanical-cooma",
-    type: "offer",
-    title: "Small engine & mechanical help",
-    person: "Riley",
-    town: "Cooma",
-    offers:
-      "Can help with mower, small engine and basic mechanical jobs.",
-    wants: "Carpentry, transport help or another useful local trade.",
-  },
-];
-
-function ProposeContent() {
+export default function ProposePage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
+
   const listingId = searchParams.get("listing") || "";
+  const listingTitle = searchParams.get("title") || "this listing";
 
-  const [savedListings, setSavedListings] = useState<Listing[]>([]);
-  const [loaded, setLoaded] = useState(false);
-
-  const [youProvide, setYouProvide] = useState("");
-  const [youReceive, setYouReceive] = useState("");
-  const [when, setWhen] = useState("");
-  const [notes, setNotes] = useState("");
+  const [offer, setOffer] = useState("");
+  const [message, setMessage] = useState("");
+  const [delivery, setDelivery] = useState("pickup");
   const [sent, setSent] = useState(false);
 
-  useEffect(() => {
-    try {
-      const stored = JSON.parse(
-        localStorage.getItem("localloop-listings") || "[]"
-      );
+  function sendOffer(e: React.FormEvent) {
+    e.preventDefault();
 
-      if (Array.isArray(stored)) {
-        setSavedListings(stored);
-      }
-    } catch {
-      setSavedListings([]);
-    }
+    if (!offer.trim()) return;
 
-    setLoaded(true);
-  }, []);
-
-  const listing = useMemo(() => {
-    return [...savedListings, ...demoListings].find(
-      (item) => item.id === listingId
+    const existingOffers = JSON.parse(
+      localStorage.getItem("localLoopOffers") || "[]"
     );
-  }, [savedListings, listingId]);
 
-  const isNeed = listing?.type === "need";
-
-  useEffect(() => {
-    if (!listing) return;
-
-    if (listing.type === "need") {
-      setYouProvide(listing.wants || "");
-      setYouReceive(listing.offers || "");
-    } else {
-      setYouReceive(listing.offers || "");
-    }
-  }, [listing]);
-
-  function sendOffer() {
-    if (!listing || !youProvide.trim()) return;
-
-    const otherPerson =
-      listing.person === "You" ? "Listing owner" : listing.person;
-
-    const offer = {
-      id: `barter-${Date.now()}`,
-      listingId: listing.id,
-      title: listing.title,
-      with: otherPerson,
-      town: listing.town,
-      status: "Pending",
-      when: when.trim(),
-      where:
-        listing.from && listing.to
-          ? `${listing.from} → ${listing.to}`
-          : listing.town,
-      youProvide: youProvide.trim(),
-      theyProvide: youReceive.trim(),
-      conditions: notes.trim(),
+    const newOffer = {
+      id: Date.now().toString(),
+      listingId,
+      listingTitle,
+      offer,
+      message,
+      delivery,
+      status: "pending",
       createdAt: new Date().toISOString(),
     };
 
-    try {
-      const existing = JSON.parse(
-        localStorage.getItem("localloop-barters") || "[]"
-      );
-
-      const current = Array.isArray(existing) ? existing : [];
-
-      localStorage.setItem(
-        "localloop-barters",
-        JSON.stringify([offer, ...current])
-      );
-    } catch {
-      localStorage.setItem(
-        "localloop-barters",
-        JSON.stringify([offer])
-      );
-    }
-
     localStorage.setItem(
-      "localloop-current-offer",
-      JSON.stringify(offer)
+      "localLoopOffers",
+      JSON.stringify([newOffer, ...existingOffers])
     );
 
     setSent(true);
   }
 
-  if (!loaded) {
+  if (sent) {
     return (
-      <main className="container" style={{ padding: "2rem 0" }}>
-        Loading offer...
-      </main>
-    );
-  }
+      <main
+        style={{
+          minHeight: "100vh",
+          background: "#f5f5f5",
+          padding: "24px 18px",
+          fontFamily: "Arial, sans-serif",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 520,
+            margin: "60px auto",
+            background: "#fff",
+            borderRadius: 20,
+            padding: 28,
+            boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+          }}
+        >
+          <div
+            style={{
+              width: 58,
+              height: 58,
+              borderRadius: "50%",
+              background: "#e8f5e9",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 28,
+              marginBottom: 18,
+            }}
+          >
+            ✓
+          </div>
 
-  if (!listing) {
-    return (
-      <main className="container" style={{ padding: "3rem 0" }}>
-        <div className="card">
-          <h1>Listing not found</h1>
+          <h1 style={{ margin: "0 0 10px", fontSize: 28 }}>
+            Offer sent
+          </h1>
 
-          <Link className="btn" href="/browse">
-            Back to browse
-          </Link>
+          <p
+            style={{
+              margin: "0 0 24px",
+              color: "#666",
+              lineHeight: 1.5,
+            }}
+          >
+            Your offer for <strong>{listingTitle}</strong> has been sent.
+            The seller can accept, decline or counter.
+          </p>
+
+          <button
+            onClick={() => router.push("/messages")}
+            style={{
+              width: "100%",
+              border: 0,
+              borderRadius: 12,
+              padding: "15px 18px",
+              background: "#d62f2f",
+              color: "#fff",
+              fontWeight: 700,
+              fontSize: 16,
+              cursor: "pointer",
+            }}
+          >
+            View messages
+          </button>
+
+          <button
+            onClick={() => router.back()}
+            style={{
+              width: "100%",
+              border: "1px solid #ddd",
+              borderRadius: 12,
+              padding: "14px 18px",
+              background: "#fff",
+              color: "#333",
+              fontWeight: 600,
+              fontSize: 15,
+              marginTop: 10,
+              cursor: "pointer",
+            }}
+          >
+            Back to listing
+          </button>
         </div>
       </main>
     );
   }
 
-  const subject =
-    listing.person === "You" ? "They" : listing.person;
-
   return (
-    <main className="container" style={{ padding: "2rem 0 4rem" }}>
-      <section
+    <main
+      style={{
+        minHeight: "100vh",
+        background: "#f5f5f5",
+        padding: "24px 18px",
+        fontFamily: "Arial, sans-serif",
+      }}
+    >
+      <div
         style={{
-          background: "#f4efe3",
-          borderRadius: 22,
-          padding: "1.4rem",
-          marginBottom: "1.2rem",
+          maxWidth: 520,
+          margin: "30px auto",
+          background: "#fff",
+          borderRadius: 20,
+          padding: 24,
+          boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
         }}
       >
-        <p
+        <button
+          onClick={() => router.back()}
           style={{
-            color: "#315c44",
-            fontWeight: 800,
-            marginBottom: "0.4rem",
+            border: 0,
+            background: "transparent",
+            fontSize: 15,
+            padding: 0,
+            marginBottom: 18,
+            cursor: "pointer",
           }}
         >
-          MAKE AN OFFER
-        </p>
+          ← Back
+        </button>
 
-        <h1
-          style={{
-            fontSize: "clamp(2rem, 8vw, 3.6rem)",
-            marginBottom: "0.7rem",
-          }}
-        >
-          {listing.title}
+        <h1 style={{ margin: "0 0 6px", fontSize: 28 }}>
+          Make an offer
         </h1>
 
-        <p style={{ marginBottom: 0 }}>
-          {listing.town}
+        <p
+          style={{
+            margin: "0 0 24px",
+            color: "#666",
+            lineHeight: 1.45,
+          }}
+        >
+          Send a quick offer for <strong>{listingTitle}</strong>.
         </p>
-      </section>
 
-      <section className="card" style={{ marginBottom: "1rem" }}>
-        {isNeed ? (
-          <>
-            <p>
-              <strong>{subject} needs:</strong>
-              <br />
-              {listing.wants}
-            </p>
-
-            <p>
-              <strong>{subject} offers in exchange:</strong>
-              <br />
-              {listing.offers}
-            </p>
-          </>
-        ) : (
-          <>
-            <p>
-              <strong>{subject} offers:</strong>
-              <br />
-              {listing.offers}
-            </p>
-
-            <p>
-              <strong>{subject} would like:</strong>
-              <br />
-              {listing.wants}
-            </p>
-          </>
-        )}
-
-        {listing.from && listing.to && (
-          <div
+        <form onSubmit={sendOffer}>
+          <label
             style={{
-              background: "#eef4ef",
-              padding: "0.9rem",
-              borderRadius: 12,
-              marginTop: "1rem",
+              display: "block",
+              fontWeight: 700,
+              marginBottom: 8,
             }}
           >
-            <strong>Route</strong>
-            <br />
-            {listing.from} → {listing.to}
-          </div>
-        )}
-      </section>
-
-      {!sent ? (
-        <section className="card" style={{ display: "grid", gap: "1rem" }}>
-          <label>
-            <strong>You will provide</strong>
-
-            <textarea
-              value={youProvide}
-              onChange={(e) => setYouProvide(e.target.value)}
-              placeholder="What will you do or provide?"
-              style={{
-                width: "100%",
-                minHeight: 100,
-                marginTop: 8,
-                padding: "0.9rem",
-                borderRadius: 12,
-                border: "1px solid #ccc",
-              }}
-            />
+            Your offer
           </label>
 
-          <label>
-            <strong>You will receive</strong>
-
-            <textarea
-              value={youReceive}
-              onChange={(e) => setYouReceive(e.target.value)}
-              placeholder="What will you receive in exchange?"
-              style={{
-                width: "100%",
-                minHeight: 100,
-                marginTop: 8,
-                padding: "0.9rem",
-                borderRadius: 12,
-                border: "1px solid #ccc",
-              }}
-            />
-          </label>
-
-          <label>
-            <strong>When?</strong>
-            <span style={{ color: "#777" }}> Optional</span>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              border: "1px solid #ccc",
+              borderRadius: 12,
+              padding: "0 14px",
+              marginBottom: 20,
+            }}
+          >
+            <span style={{ fontWeight: 700, marginRight: 8 }}>$</span>
 
             <input
-              value={when}
-              onChange={(e) => setWhen(e.target.value)}
-              placeholder="Saturday morning, next week..."
+              value={offer}
+              onChange={(e) => setOffer(e.target.value)}
+              inputMode="decimal"
+              placeholder="Enter amount"
               style={{
-                width: "100%",
-                marginTop: 8,
-                padding: "0.9rem",
-                borderRadius: 12,
-                border: "1px solid #ccc",
+                flex: 1,
+                border: 0,
+                outline: 0,
+                padding: "15px 0",
+                fontSize: 17,
               }}
             />
-          </label>
+          </div>
 
-          <label>
-            <strong>Anything else?</strong>
-            <span style={{ color: "#777" }}> Optional</span>
-
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Loading, pickup details, condition, equipment..."
+          <label
+            style={{
+              display: "block",
+              fontWeight: 700,
+              marginBottom: 8,
+            }}
+          >
+            Message
+            <span
               style={{
-                width: "100%",
-                minHeight: 90,
-                marginTop: 8,
-                padding: "0.9rem",
-                borderRadius: 12,
-                border: "1px solid #ccc",
+                fontWeight: 400,
+                color: "#888",
+                marginLeft: 5,
               }}
-            />
+            >
+              optional
+            </span>
           </label>
+
+          <textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Add a quick message to the seller..."
+            rows={4}
+            style={{
+              width: "100%",
+              boxSizing: "border-box",
+              border: "1px solid #ccc",
+              borderRadius: 12,
+              padding: 14,
+              fontSize: 16,
+              resize: "vertical",
+              marginBottom: 20,
+            }}
+          />
+
+          <label
+            style={{
+              display: "block",
+              fontWeight: 700,
+              marginBottom: 10,
+            }}
+          >
+            How will you get it?
+          </label>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 10,
+              marginBottom: 24,
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setDelivery("pickup")}
+              style={{
+                padding: 14,
+                borderRadius: 12,
+                border:
+                  delivery === "pickup"
+                    ? "2px solid #d62f2f"
+                    : "1px solid #ccc",
+                background:
+                  delivery === "pickup" ? "#fff4f4" : "#fff",
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
+              Pick up
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setDelivery("delivery")}
+              style={{
+                padding: 14,
+                borderRadius: 12,
+                border:
+                  delivery === "delivery"
+                    ? "2px solid #d62f2f"
+                    : "1px solid #ccc",
+                background:
+                  delivery === "delivery" ? "#fff4f4" : "#fff",
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
+              Delivery
+            </button>
+          </div>
 
           <button
-            className="btn"
-            onClick={sendOffer}
-            disabled={!youProvide.trim()}
+            type="submit"
+            disabled={!offer.trim()}
+            style={{
+              width: "100%",
+              border: 0,
+              borderRadius: 12,
+              padding: "16px 18px",
+              background: offer.trim() ? "#d62f2f" : "#bbb",
+              color: "#fff",
+              fontSize: 17,
+              fontWeight: 700,
+              cursor: offer.trim() ? "pointer" : "default",
+            }}
           >
             Send offer
           </button>
 
           <p
             style={{
-              fontSize: "0.85rem",
+              fontSize: 13,
+              color: "#888",
+              lineHeight: 1.4,
+              margin: "14px 2px 0",
               textAlign: "center",
-              margin: 0,
             }}
           >
-            If the other person accepts, LocalLoop will create a deal summary
-            automatically.
+            The seller can accept, decline or counter your offer.
           </p>
-        </section>
-      ) : (
-        <section
-          style={{
-            background: "#eef4ef",
-            borderRadius: 18,
-            padding: "1.3rem",
-          }}
-        >
-          <h2>Offer sent ✓</h2>
-
-          <div
-            style={{
-              background: "#fff",
-              borderRadius: 14,
-              padding: "1rem",
-              marginBottom: "1rem",
-            }}
-          >
-            <p>
-              <strong>You provide:</strong>
-              <br />
-              {youProvide}
-            </p>
-
-            <p style={{ marginBottom: 0 }}>
-              <strong>You receive:</strong>
-              <br />
-              {youReceive}
-            </p>
-          </div>
-
-          <div style={{ display: "grid", gap: "0.8rem" }}>
-            <Link className="btn" href="/barters">
-              View My Barters
-            </Link>
-
-            <Link
-              href={`/messages?listing=${listing.id}`}
-              style={{
-                textAlign: "center",
-                background: "#f4efe3",
-                color: "#315c44",
-                padding: "0.9rem",
-                borderRadius: 12,
-                fontWeight: 800,
-              }}
-            >
-              Message about this offer
-            </Link>
-          </div>
-        </section>
-      )}
+        </form>
+      </div>
     </main>
-  );
-}
-
-export default function ProposePage() {
-  return (
-    <Suspense
-      fallback={
-        <main className="container" style={{ padding: "2rem 0" }}>
-          Loading offer...
-        </main>
-      }
-    >
-      <ProposeContent />
-    </Suspense>
   );
 }
