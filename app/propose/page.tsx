@@ -9,10 +9,8 @@ type Listing = {
   title: string;
   person: string;
   town: string;
-  category: string;
   offers: string;
   wants: string;
-  photos?: string[];
 };
 
 type Offer = {
@@ -29,40 +27,34 @@ type Offer = {
 
 const demoListings: Listing[] = [
   {
-    id: "mitre10-pambula-pickup",
+    id: "kids-clothes-bombala",
     type: "offer",
-    title: "Mitre 10 Pambula pickup",
-    person: "Chris",
-    town: "Cooma",
-    category: "Pickups & Errands",
-    offers:
-      "Can collect a prepaid hardware order from Pambula and bring it toward Cooma.",
+    title: "Kids clothes bundle",
+    person: "Jess",
+    town: "Bombala",
+    offers: "A bundle of good kids clothes ready for another family.",
     wants:
-      "Firewood, fresh produce, or another useful local favour.",
+      "Other kids clothes, toys, books, school gear, or something useful for the family.",
   },
   {
-    id: "merimbula-pharmacy-pickup",
-    type: "offer",
-    title: "Merimbula pharmacy pickup",
-    person: "Emma",
+    id: "dog-minding-cooma",
+    type: "need",
+    title: "Dog minding this weekend",
+    person: "Sarah",
     town: "Cooma",
-    category: "Pickups & Errands",
     offers:
-      "Can collect eligible prepaid pharmacy items when already travelling inland.",
-    wants:
-      "Garden help, dog minding, or help moving a few items.",
+      "Dog sitting, baking, cleaning help, garden help, or another useful swap.",
+    wants: "Someone reliable to look after my dog for a few hours.",
   },
   {
-    id: "click-and-collect-coast",
+    id: "birthday-cake-bombala",
     type: "offer",
-    title: "Click & Collect pickup",
-    person: "Dan",
-    town: "Cooma",
-    category: "Pickups & Errands",
-    offers:
-      "Heading from the coast toward Cooma and can collect a prepaid Click & Collect order.",
+    title: "Birthday cake baking",
+    person: "Megan",
+    town: "Bombala",
+    offers: "Can make a simple birthday cake or cupcakes.",
     wants:
-      "Fresh eggs, mechanical help, trailer use, or another useful favour.",
+      "Garden help, kids items, family photos, fresh produce, or another offer.",
   },
   {
     id: "firewood-cooma",
@@ -70,23 +62,9 @@ const demoListings: Listing[] = [
     title: "Firewood delivery around Cooma",
     person: "Steve",
     town: "Cooma",
-    category: "Home & Garden",
-    offers:
-      "Can deliver a ute load of firewood around Cooma and nearby areas.",
+    offers: "Can deliver a ute load of firewood around Cooma.",
     wants:
-      "Small carpentry work, welding help, or mower servicing.",
-  },
-  {
-    id: "trailer-transport-jindabyne",
-    type: "offer",
-    title: "Trailer transport help",
-    person: "Sarah",
-    town: "Jindabyne",
-    category: "Transport",
-    offers:
-      "Can help move a mower, furniture or other suitable items with a trailer.",
-    wants:
-      "Garden cleanup, painting help, or computer assistance.",
+      "Small carpentry work, welding help, mower servicing, produce, or another offer.",
   },
   {
     id: "fencing-bombala",
@@ -94,23 +72,10 @@ const demoListings: Listing[] = [
     title: "Need a hand with fencing",
     person: "Tom",
     town: "Bombala",
-    category: "Trades & Farm",
     offers:
-      "Can trade livestock-yard cleanup, firewood or general farm help.",
+      "Livestock-yard cleanup, firewood, general farm help, transport help, or another favour.",
     wants:
       "Someone experienced to help repair and tension a section of fencing.",
-  },
-  {
-    id: "mechanical-cooma",
-    type: "offer",
-    title: "Small engine & mechanical help",
-    person: "Riley",
-    town: "Cooma",
-    category: "Mechanical",
-    offers:
-      "Can help with basic mower, small engine and mechanical jobs.",
-    wants:
-      "Carpentry, transport help, fresh produce, or another useful local trade.",
   },
 ];
 
@@ -121,7 +86,7 @@ export default function ProposePage() {
   const [listingId, setListingId] = useState("");
   const [listingTitle, setListingTitle] = useState("this listing");
 
-  const [offerType, setOfferType] = useState("");
+  const [offerType, setOfferType] = useState("other");
   const [offerText, setOfferText] = useState("");
   const [message, setMessage] = useState("");
   const [sent, setSent] = useState(false);
@@ -140,9 +105,9 @@ export default function ProposePage() {
         localStorage.getItem("localloop-listings") || "[]"
       );
 
-      const savedListings = Array.isArray(stored) ? stored : [];
+      const saved = Array.isArray(stored) ? stored : [];
 
-      const found = [...savedListings, ...demoListings].find(
+      const found = [...saved, ...demoListings].find(
         (item: Listing) => String(item.id) === String(id)
       );
 
@@ -162,49 +127,16 @@ export default function ProposePage() {
     }
   }, []);
 
-  const offerTypes = [
-    {
-      id: "item",
-      label: "Item",
-      icon: "📦",
-      example: "Something you own",
-    },
-    {
-      id: "service",
-      label: "Service",
-      icon: "🛠️",
-      example: "A skill or service",
-    },
-    {
-      id: "labour",
-      label: "Labour",
-      icon: "💪",
-      example: "Your time or help",
-    },
-    {
-      id: "transport",
-      label: "Transport",
-      icon: "🛻",
-      example: "Pickup or delivery",
-    },
-    {
-      id: "other",
-      label: "Other",
-      icon: "🔄",
-      example: "Something different",
-    },
-  ];
-
   const lookingFor = listing
     ? listing.type === "need"
-      ? listing.offers || "Open to any reasonable offer."
-      : listing.wants || "Open to any reasonable offer."
-    : "Open to any reasonable offer.";
+      ? listing.offers || "Open to offers."
+      : listing.wants || "Open to offers."
+    : "Open to offers.";
 
   function sendOffer(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!offerType || !offerText.trim()) return;
+    if (!offerText.trim()) return;
 
     let existingOffers: Offer[] = [];
 
@@ -249,7 +181,7 @@ export default function ProposePage() {
       >
         <div
           style={{
-            maxWidth: 540,
+            maxWidth: 520,
             margin: "45px auto",
             background: "#fff",
             border: "1px solid #dedbd3",
@@ -259,51 +191,34 @@ export default function ProposePage() {
         >
           <div
             style={{
-              width: 62,
-              height: 62,
+              width: 56,
+              height: 56,
               borderRadius: "50%",
               background: "#edf3ef",
               color: "#214d3d",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: 30,
+              fontSize: 28,
               fontWeight: 900,
-              marginBottom: 20,
+              marginBottom: 18,
             }}
           >
             ✓
           </div>
 
-          <h1
-            style={{
-              margin: "0 0 10px",
-              fontSize: 31,
-            }}
-          >
+          <h1 style={{ margin: "0 0 8px", fontSize: 30 }}>
             Offer sent
           </h1>
 
           <p
             style={{
-              margin: "0 0 8px",
-              color: "#575c57",
+              color: "#666",
               lineHeight: 1.5,
-              fontSize: 16,
+              margin: "0 0 22px",
             }}
           >
             Your offer for <strong>{listingTitle}</strong> has been sent.
-          </p>
-
-          <p
-            style={{
-              margin: "0 0 25px",
-              color: "#858982",
-              lineHeight: 1.45,
-              fontSize: 14,
-            }}
-          >
-            You can continue discussing the details privately in messages.
           </p>
 
           <button
@@ -321,8 +236,8 @@ export default function ProposePage() {
               padding: 16,
               background: "#214d3d",
               color: "#fff",
-              fontSize: 17,
               fontWeight: 900,
+              fontSize: 16,
             }}
           >
             Continue to messages
@@ -337,8 +252,8 @@ export default function ProposePage() {
               padding: 16,
               background: "#f1eee6",
               color: "#214d3d",
-              fontSize: 16,
               fontWeight: 800,
+              fontSize: 16,
               marginTop: 10,
             }}
           >
@@ -349,29 +264,32 @@ export default function ProposePage() {
     );
   }
 
+  const chips = [
+    { id: "item", label: "Item" },
+    { id: "service", label: "Service" },
+    { id: "labour", label: "Help" },
+    { id: "transport", label: "Transport" },
+    { id: "other", label: "Other" },
+  ];
+
   return (
     <main
       style={{
         minHeight: "100vh",
         background: "#f7f6f1",
-        padding: "22px 16px 60px",
+        padding: "20px 16px 60px",
       }}
     >
-      <div
-        style={{
-          maxWidth: 560,
-          margin: "0 auto",
-        }}
-      >
+      <div style={{ maxWidth: 560, margin: "0 auto" }}>
         <button
           onClick={() => router.back()}
           style={{
             border: 0,
             background: "transparent",
-            padding: "0 0 18px",
             color: "#214d3d",
-            fontSize: 16,
             fontWeight: 800,
+            fontSize: 16,
+            padding: "0 0 18px",
           }}
         >
           ← Back
@@ -391,7 +309,7 @@ export default function ProposePage() {
               fontSize: 12,
               fontWeight: 900,
               letterSpacing: "0.08em",
-              margin: "0 0 8px",
+              margin: "0 0 6px",
             }}
           >
             MAKE AN OFFER
@@ -399,8 +317,8 @@ export default function ProposePage() {
 
           <h1
             style={{
-              margin: "0 0 8px",
-              fontSize: 31,
+              margin: "0 0 6px",
+              fontSize: 30,
               lineHeight: 1.08,
             }}
           >
@@ -410,8 +328,8 @@ export default function ProposePage() {
           {listing && (
             <p
               style={{
-                margin: "0 0 22px",
-                color: "#747872",
+                margin: "0 0 18px",
+                color: "#777",
                 fontSize: 14,
               }}
             >
@@ -422,19 +340,19 @@ export default function ProposePage() {
           <div
             style={{
               background: "#edf3ef",
-              borderRadius: 16,
-              padding: 17,
-              marginBottom: 26,
+              borderRadius: 14,
+              padding: 14,
+              marginBottom: 22,
             }}
           >
             <div
               style={{
-                color: "#214d3d",
-                fontSize: 13,
+                color: "#315c44",
+                fontSize: 11,
                 fontWeight: 900,
                 textTransform: "uppercase",
                 letterSpacing: "0.05em",
-                marginBottom: 7,
+                marginBottom: 5,
               }}
             >
               They’re looking for
@@ -442,10 +360,9 @@ export default function ProposePage() {
 
             <div
               style={{
-                color: "#34483d",
-                fontSize: 16,
-                lineHeight: 1.5,
-                fontWeight: 600,
+                color: "#35483e",
+                lineHeight: 1.45,
+                fontWeight: 700,
               }}
             >
               {lookingFor}
@@ -457,74 +374,61 @@ export default function ProposePage() {
               style={{
                 display: "block",
                 fontWeight: 900,
-                marginBottom: 5,
+                marginBottom: 8,
               }}
             >
-              What would you like to offer?
+              What are you offering?
             </label>
 
-            <p
+            <textarea
+              value={offerText}
+              onChange={(e) => setOfferText(e.target.value)}
+              placeholder="Describe what you'd swap, do or help with..."
+              rows={4}
               style={{
-                margin: "0 0 12px",
-                color: "#7a7e79",
-                fontSize: 14,
+                width: "100%",
+                boxSizing: "border-box",
+                border: "1px solid #ccc",
+                borderRadius: 14,
+                padding: 14,
+                fontSize: 16,
+                lineHeight: 1.45,
+                resize: "vertical",
+                marginBottom: 12,
               }}
-            >
-              Choose the closest option.
-            </p>
+            />
 
             <div
               style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: 10,
-                marginBottom: 24,
+                display: "flex",
+                gap: 8,
+                overflowX: "auto",
+                paddingBottom: 6,
+                marginBottom: 20,
               }}
             >
-              {offerTypes.map((type) => {
-                const selected = offerType === type.id;
+              {chips.map((chip) => {
+                const selected = offerType === chip.id;
 
                 return (
                   <button
-                    key={type.id}
+                    key={chip.id}
                     type="button"
-                    onClick={() => setOfferType(type.id)}
+                    onClick={() => setOfferType(chip.id)}
                     style={{
-                      textAlign: "left",
-                      padding: 15,
-                      borderRadius: 14,
+                      flex: "0 0 auto",
                       border: selected
                         ? "2px solid #214d3d"
-                        : "1px solid #ddd",
+                        : "1px solid #d8d8d2",
+                      borderRadius: 999,
+                      padding: "9px 13px",
                       background: selected ? "#edf3ef" : "#fff",
+                      color: selected ? "#214d3d" : "#646864",
+                      fontWeight: 800,
+                      fontSize: 13,
                     }}
                   >
-                    <div
-                      style={{
-                        fontSize: 24,
-                        marginBottom: 7,
-                      }}
-                    >
-                      {type.icon}
-                    </div>
-
-                    <div
-                      style={{
-                        fontWeight: 900,
-                        marginBottom: 3,
-                      }}
-                    >
-                      {type.label}
-                    </div>
-
-                    <div
-                      style={{
-                        fontSize: 12,
-                        color: "#81857f",
-                      }}
-                    >
-                      {type.example}
-                    </div>
+                    {chip.label}
                   </button>
                 );
               })}
@@ -537,14 +441,22 @@ export default function ProposePage() {
                 marginBottom: 8,
               }}
             >
-              Your offer
+              Add a message{" "}
+              <span
+                style={{
+                  color: "#999",
+                  fontWeight: 400,
+                }}
+              >
+                optional
+              </span>
             </label>
 
             <textarea
-              value={offerText}
-              onChange={(e) => setOfferText(e.target.value)}
-              placeholder="Example: I can give you a load of firewood for the pickup."
-              rows={4}
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Anything else they should know?"
+              rows={3}
               style={{
                 width: "100%",
                 boxSizing: "border-box",
@@ -558,54 +470,15 @@ export default function ProposePage() {
               }}
             />
 
-            <label
-              style={{
-                display: "block",
-                fontWeight: 900,
-                marginBottom: 8,
-              }}
-            >
-              Add a message{" "}
-              <span
-                style={{
-                  color: "#8a8d88",
-                  fontWeight: 400,
-                }}
-              >
-                optional
-              </span>
-            </label>
-
-            <textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Example: I’m in Bombala and can work around whatever day suits you."
-              rows={3}
-              style={{
-                width: "100%",
-                boxSizing: "border-box",
-                border: "1px solid #ccc",
-                borderRadius: 14,
-                padding: 14,
-                fontSize: 16,
-                lineHeight: 1.45,
-                resize: "vertical",
-                marginBottom: 22,
-              }}
-            />
-
             <button
               type="submit"
-              disabled={!offerType || !offerText.trim()}
+              disabled={!offerText.trim()}
               style={{
                 width: "100%",
                 border: 0,
                 borderRadius: 14,
                 padding: 17,
-                background:
-                  offerType && offerText.trim()
-                    ? "#214d3d"
-                    : "#aaa",
+                background: offerText.trim() ? "#214d3d" : "#aaa",
                 color: "#fff",
                 fontSize: 17,
                 fontWeight: 900,
@@ -616,14 +489,14 @@ export default function ProposePage() {
 
             <p
               style={{
-                margin: "13px 4px 0",
                 textAlign: "center",
-                color: "#858982",
-                fontSize: 13,
-                lineHeight: 1.45,
+                color: "#8a8d88",
+                fontSize: 12,
+                lineHeight: 1.4,
+                margin: "12px 4px 0",
               }}
             >
-              No public prices. Any other details can be worked out privately.
+              You can work out any other details privately in chat.
             </p>
           </form>
         </div>
